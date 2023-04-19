@@ -69,6 +69,17 @@ class ShowPidCommand : public BuiltInCommand {
   void execute() override;
 };
 
+class ChangePromptCommand : public BuiltInCommand {
+  public:
+    char* new_prompt = NULL;
+  public:
+    ChangePromptCommand(const char* cmd_line){
+      //
+    }
+    virtual ~ChangePromptCommand() {}
+    void execute() override;
+};
+
 class JobsList;
 class QuitCommand : public BuiltInCommand {
 // TODO: Add your data members
@@ -166,8 +177,8 @@ class KillCommand : public BuiltInCommand {
 
 class SmallShell {
  private:
-  // TODO: Add your data members
   SmallShell();
+  char* prompt = "smash>";
  public:
   Command *CreateCommand(const char* cmd_line);
   SmallShell(SmallShell const&)      = delete; // disable copy ctor
@@ -179,7 +190,12 @@ class SmallShell {
     return instance;
   }
   ~SmallShell();
+  
   void executeCommand(const char* cmd_line);
+  char* get_prompt(){
+    return this->prompt;
+  }
+  void change_prompt(char* new_prompt);
   // TODO: add extra methods as needed
 };
 
