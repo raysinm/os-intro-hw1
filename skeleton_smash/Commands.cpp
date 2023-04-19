@@ -142,4 +142,14 @@ void SmallShell::change_prompt(char* new_prompt) {
 
 /*****  Command Implementations  ****/
 
-void ChangePrompt::execute()
+void ChangePromptCommand::execute(){
+  //TODO: Consider parsing in the general Command class
+  char** cmdl_parsed = (char**) malloc((COMMAND_MAX_ARGS+1)* COMMAND_ARGS_MAX_LENGTH)   //FIXME: 1. Currently takes name of command as first argument  
+                                                                                                //2. Whats the right allocation size?
+  
+  int num_args = _parseCommandLine(this->cmd_line, cmdl_parsed) - 1;
+  
+
+
+
+}

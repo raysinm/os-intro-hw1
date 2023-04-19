@@ -7,9 +7,12 @@
 #define COMMAND_MAX_ARGS (20)
 
 class Command {
-// TODO: Add your data members
+ private:
+  const char* cmd_line;
  public:
-  Command(const char* cmd_line);
+  Command(const char* cmd_line){
+    this->cmd_line = cmd_line; //! we save a pointer, notice that cmd_line doesnt get deleted
+  }
   virtual ~Command();
   virtual void execute() = 0;
   //virtual void prepare();
@@ -71,11 +74,7 @@ class ShowPidCommand : public BuiltInCommand {
 
 class ChangePromptCommand : public BuiltInCommand {
   public:
-    char* new_prompt = NULL;
-  public:
-    ChangePromptCommand(const char* cmd_line){
-      //
-    }
+    ChangePromptCommand(const char* cmd_line);
     virtual ~ChangePromptCommand() {}
     void execute() override;
 };
