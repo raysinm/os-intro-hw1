@@ -114,7 +114,7 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
   string firstWord = cmd_s.substr(0, cmd_s.find_first_of(" \n"));
   
   if (firstWord.compare("chprompt") == 0) {
-    return new ChangePromptCommand(cmd_line);
+    return new ChangePromptCommand(smash=this, cmd_line);
 
   return nullptr;
 }

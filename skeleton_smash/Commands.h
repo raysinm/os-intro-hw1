@@ -9,8 +9,10 @@
 class Command {
  private:
   const char* cmd_line;
+  SmallShell* smash;
  public:
-  Command(const char* cmd_line){
+  virtual Command(SmallShell* smash, const char* cmd_line){
+    this->smash = smash;
     this->cmd_line = cmd_line; //! we save a pointer, notice that cmd_line doesnt get deleted
   }
   virtual ~Command();
