@@ -7,13 +7,11 @@
 #define COMMAND_MAX_ARGS (20)
 
 class Command {
- private:
+ protected:
   const char* cmd_line;
-  SmallShell* smash;
  public:
-  virtual Command(SmallShell* smash, const char* cmd_line){
-    this->smash = smash;
-    this->cmd_line = cmd_line; //! we save a pointer, notice that cmd_line doesnt get deleted
+  Command(const char* cmd_line_ptr){
+    this->cmd_line = cmd_line_ptr; //! we save a pointer, notice that cmd_line doesnt get deleted
   }
   virtual ~Command();
   virtual void execute() = 0;
@@ -179,7 +177,7 @@ class KillCommand : public BuiltInCommand {
 class SmallShell {
  private:
   SmallShell();
-  char* prompt = "smash>";
+  static std::string prompt;  //custom added
  public:
   Command *CreateCommand(const char* cmd_line);
   SmallShell(SmallShell const&)      = delete; // disable copy ctor
@@ -193,10 +191,10 @@ class SmallShell {
   ~SmallShell();
   
   void executeCommand(const char* cmd_line);
-  char* get_prompt(){
+  std::string& get_prompt(){
     return this->prompt;
   }
-  void change_prompt(char* new_prompt);
+  void change_prompt(std::string& new_prompt);
   // TODO: add extra methods as needed
 };
 

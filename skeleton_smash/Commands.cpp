@@ -79,8 +79,11 @@ void _removeBackgroundSign(char* cmd_line) {
 
 // TODO: Add your implementation for classes in Commands.h 
 
+
+
 SmallShell::SmallShell() {
 // TODO: add your implementation
+  this->prompt = "smash";
 }
 
 SmallShell::~SmallShell() {
@@ -110,12 +113,13 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
   */
 
  //TODO: parse command!
-  string cmd_s = _trim(string(cmd_line));
+  
+  std::string cmd_s = _trim(string(cmd_line));
   string firstWord = cmd_s.substr(0, cmd_s.find_first_of(" \n"));
   
   if (firstWord.compare("chprompt") == 0) {
-    return new ChangePromptCommand(smash=this, cmd_line);
-
+    return new ChangePromptCommand(cmd_line);
+  }
   return nullptr;
 }
 
@@ -126,30 +130,48 @@ void SmallShell::executeCommand(const char *cmd_line) {
   // cmd->execute();
   // Please note that you must fork smash process for some commands (e.g., external commands....)
   
-  //TODO: Add foreground/background if statements
-  //Currently Assuming background command 
-  // char* cmd_line_parsed = strdup(cmd_line);
-
-  // cmd_line_parsed = strtok(cmd_line_parsed, " "); //outputs a ponter to the first sub-string
-
+  Command* cmd = CreateCommand(cmd_line);
+  cmd->execute();
+  return;
 }
 
-void SmallShell::change_prompt(char* new_prompt) {
+void SmallShell::change_prompt(std::string& new_prompt) {
   this->prompt = new_prompt;
   return;
 }
 
 
 /*****  Command Implementations  ****/
-
+/*
+What we know:
+1. Each command gets cmd_line as is
+2. Each command has to know:
+    a. number of args
+    b. what are the args
+3. ExecuteCommand calls CreateCommand that initializes a certain command based on the first word in cmd_line
+4. Each command gets an instance of the shell (singleton method!).
+5. Don't forget freeing lists of args allocated.
+*/
 void ChangePromptCommand::execute(){
-  //TODO: Consider parsing in the general Command class
-  char** cmdl_parsed = (char**) malloc((COMMAND_MAX_ARGS+1)* COMMAND_ARGS_MAX_LENGTH)   //FIXME: 1. Currently takes name of command as first argument  
-                                                                                                //2. Whats the right allocation size?
+  //TODO: Consider parsing in a seperate helper function
   
-  int num_args = _parseCommandLine(this->cmd_line, cmdl_parsed) - 1;
-  
+  char** args_parsed = (char**) malloc((COMMAND_MAX_ARGS+1)* COMMAND_ARGS_MAX_LENGTH);   //FIXME: 1. Currently takes name of command as first argument  
+  if (args_parsed == nullptr)
+  {
+    return; //TODO: Maybe assert?
+  }                                                                                        //2. Whats the right allocation size?
+  int num_args = _parseCommandLine(this->cmd_line, args_parsed) - 1;
 
 
+  SmallShell& smash = SmallShell::getInstance();
+  printf(*args_parsed);
+  if (num_args >= 1){
+    smash.change_prompt(string(args_parsed[1]));
+  } else{
+    smash.change_prompt(string("smash"));
+  }
+  // smash.change_prompt(args_parsed[1]);
+  free(args_parsed);
+  return;
 
 }
