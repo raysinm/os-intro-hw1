@@ -6,6 +6,7 @@
 #include <sys/wait.h>
 #include <iomanip>
 #include "Commands.h"
+#include <limits.h>
 
 using namespace std;
 
@@ -84,15 +85,21 @@ Command::Command(const char* cmd_line): cmd_line(cmd_line){}
 BuiltInCommand::BuiltInCommand(const char* cmd_line): Command(cmd_line){}
 //************************//
 
-string SmallShell::prompt = "smash";
+// string SmallShell::prompt = "smash";
 
-SmallShell::SmallShell() {
+SmallShell::SmallShell() :  prompt("smash"),
+                            pid(getppid()),
+                            last_dir(nullptr){
 // TODO: add your implementation
-  this->prompt = "smash";
+//   this->prompt = "smash";
+    
 }
 
 SmallShell::~SmallShell() {
 // TODO: add your implementation
+    if (last_dir != nullptr){
+        free(last_dir);
+    }
 }
 
 /**
@@ -100,12 +107,13 @@ SmallShell::~SmallShell() {
 */
 Command * SmallShell::CreateCommand(const char* cmd_line) {
 	// For example:
-/*
+ /*
   string cmd_s = _trim(string(cmd_line));
   string firstWord = cmd_s.substr(0, cmd_s.find_first_of(" \n"));
   if (firstWord.compare("pwd") == 0) {
     return new GetCurrDirCommand(cmd_line);
   }
+ 
   else if (firstWord.compare("showpid") == 0) {
     return new ShowPidCommand(cmd_line);
   }
@@ -123,6 +131,9 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
   
   if (firstWord.compare("chprompt") == 0) {
     return new ChangePromptCommand(cmd_line);
+  }
+  else if(firstWord.compare("pwd") == 0) {
+    return new GetCurrDirCommand(cmd_line);
   }
   return nullptr;
 }
@@ -153,19 +164,20 @@ What we know:
 5. Don't forget freeing lists of args allocated.
 */
 
+//chprompt
 ChangePromptCommand::ChangePromptCommand(const char* cmd_line) : BuiltInCommand(cmd_line){}
 
 void ChangePromptCommand::execute(){
   //TODO: Consider parsing in a seperate helper function
   
   char** args_parsed = (char**) malloc((COMMAND_MAX_ARGS+1)* COMMAND_ARGS_MAX_LENGTH);   //FIXME: 1. Currently takes name of command as first argument  
-  if (args_parsed == nullptr){
+  if (args_parsed == nullptr){  //TODO: error handling
     return; //TODO: Maybe assert?
   }                                                                                        //2. Whats the right allocation size?
   int num_args = _parseCommandLine(this->cmd_line, args_parsed) - 1;
 
   SmallShell& smash = SmallShell::getInstance();
-//   printf(*args_parsed);
+  printf(*args_parsed);
   if (num_args >= 1){
     smash.prompt = string(args_parsed[1]);
   } else{
@@ -175,4 +187,46 @@ void ChangePromptCommand::execute(){
   free(args_parsed);
   return;
 
+}
+
+//showpid
+ShowPidCommand::ShowPidCommand(const char* cmd_line): BuiltInCommand(cmd_line){}
+
+void ShowPidCommand::execute(){
+    SmallShell& smash = SmallShell::getInstance();
+    cout << "smash pid is " << smash.pid;
+    return;
+}
+
+
+
+
+
+//pwd
+GetCurrDirCommand::GetCurrDirCommand(const char* cmd_line): BuiltInCommand(cmd_line){}
+
+void GetCurrDirCommand::execute(){
+    char* buf = (char*) malloc(PATH_MAX * sizeof(char));    //TODO: Change to MAX_PATH(?)
+    if(buf != nullptr){
+      if(getcwd(buf, PATH_MAX) == NULL){
+         cout << buf << endl;
+         free(buf);
+     }
+    }
+}
+
+//cd
+ChangeDirCommand::ChangeDirCommand(const char* cmd_line, char** plastPwd): BuiltInCommand(cmd_line){}
+
+void ChangeDirCommand::execute(){
+    char** args_parsed = (char**) malloc((COMMAND_MAX_ARGS+1)* COMMAND_ARGS_MAX_LENGTH);   //FIXME: 1. Currently takes name of command as first argument  
+    if (args_parsed == nullptr){  //TODO: error handling
+    return; //TODO: Maybe assert?
+    }                                                                                        //2. Whats the right allocation size?
+    int num_args = _parseCommandLine(this->cmd_line, args_parsed) - 1;
+
+    SmallShell& smash = SmallShell::getInstance();
+    // if (num_args == 0){
+
+    // }
 }
