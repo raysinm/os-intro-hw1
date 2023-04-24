@@ -10,10 +10,8 @@ class Command {
  protected:
   const char* cmd_line;
  public:
-  Command(const char* cmd_line_ptr){
-    this->cmd_line = cmd_line_ptr; //! we save a pointer, notice that cmd_line doesnt get deleted
-  }
-  virtual ~Command();
+  Command(const char* cmd_line);
+  virtual ~Command() = default;
   virtual void execute() = 0;
   //virtual void prepare();
   //virtual void cleanup();
@@ -24,6 +22,7 @@ class BuiltInCommand : public Command {
  public:
   BuiltInCommand(const char* cmd_line);
   virtual ~BuiltInCommand() {}
+  // virtual void execute() override;
 };
 
 class ExternalCommand : public Command {
@@ -177,8 +176,8 @@ class KillCommand : public BuiltInCommand {
 class SmallShell {
  private:
   SmallShell();
-  static std::string prompt;  //custom added
  public:
+  static std::string prompt;  //custom added
   Command *CreateCommand(const char* cmd_line);
   SmallShell(SmallShell const&)      = delete; // disable copy ctor
   void operator=(SmallShell const&)  = delete; // disable = operator
@@ -191,11 +190,8 @@ class SmallShell {
   ~SmallShell();
   
   void executeCommand(const char* cmd_line);
-  std::string& get_prompt(){
-    return this->prompt;
-  }
-  void change_prompt(std::string& new_prompt);
-  // TODO: add extra methods as needed
+  
+  // // TODO: add extra methods as needed
 };
 
 #endif //SMASH_COMMAND_H_
