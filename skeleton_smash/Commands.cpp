@@ -208,11 +208,11 @@ GetCurrDirCommand::GetCurrDirCommand(const char* cmd_line): BuiltInCommand(cmd_l
 void GetCurrDirCommand::execute(){
     char* buf = (char*) malloc(PATH_MAX * sizeof(char));    //TODO: Change to MAX_PATH(?)
     if(buf != nullptr){
-      if(getcwd(buf, PATH_MAX) == NULL){
-         cout << buf << endl;
-         free(buf);
+      if(getcwd(buf, PATH_MAX) != NULL){
+        cout << buf << endl;
      }
     }
+    free(buf);
 }
 
 //cd
@@ -229,4 +229,8 @@ void ChangeDirCommand::execute(){
     // if (num_args == 0){
 
     // }
+    //TODO: FINISH
 }
+
+
+//********** JobsList ***********//

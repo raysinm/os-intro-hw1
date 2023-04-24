@@ -91,10 +91,11 @@ public:
 class JobsList {
  public:
   class JobEntry {
-   // TODO: Add your data members
+    int job_id;
   };
  // TODO: Add your data members
  public:
+  vector<JobEntry> jobs_list;
   JobsList();
   ~JobsList();
   void addJob(Command* cmd, bool isStopped = false);
@@ -180,6 +181,7 @@ class SmallShell {
   std::string prompt;  //custom added
   pid_t pid;
   char** last_dir;
+  JobsList* jobs_list;
   Command *CreateCommand(const char* cmd_line);
   SmallShell(SmallShell const&)      = delete; // disable copy ctor
   void operator=(SmallShell const&)  = delete; // disable = operator
