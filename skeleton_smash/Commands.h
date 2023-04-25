@@ -8,8 +8,10 @@
 
 class Command {
  protected:
+ public:  // Data
   const char* cmd_line;
- public:
+  const pid_t pid;
+ public:  // Methods
   Command(const char* cmd_line);
   virtual ~Command() = default;
   virtual void execute() = 0;
@@ -91,11 +93,21 @@ public:
 class JobsList {
  public:
   class JobEntry {
-    int job_id;
+    const int job_id;
+    pid_t pid;
+
+  public:
+    JobEntry() = delete;
+    JobEntry(const int& job_id, pid_t& pid) : job_id(job_id), 
+                                      pid(pid){}
+    ~JobEntry() = default;
+    const int& get_job_id(){
+      return this->job_id;
+    }
   };
  // TODO: Add your data members
  public:
-  vector<JobEntry> jobs_list;
+  std::vector<JobEntry> jobs_list;
   JobsList();
   ~JobsList();
   void addJob(Command* cmd, bool isStopped = false);
@@ -177,12 +189,13 @@ class KillCommand : public BuiltInCommand {
 class SmallShell {
  private:
   SmallShell();
- public:
-  std::string prompt;  //custom added
+ public:  // Data memebers
+  std::string prompt;
   pid_t pid;
   char** last_dir;
   JobsList* jobs_list;
-  Command *CreateCommand(const char* cmd_line);
+
+public:   // Methods
   SmallShell(SmallShell const&)      = delete; // disable copy ctor
   void operator=(SmallShell const&)  = delete; // disable = operator
   static SmallShell& getInstance() // make SmallShell singleton
@@ -194,8 +207,10 @@ class SmallShell {
   ~SmallShell();
   
   void executeCommand(const char* cmd_line);
-  
-  // // TODO: add extra methods as needed
+  Command *CreateCommand(const char* cmd_line);
+  //----OUR METHODS
+  std::string& get_prompt();
+  void set_prompt(const std::string& new_prompt);
 };
 
 #endif //SMASH_COMMAND_H_

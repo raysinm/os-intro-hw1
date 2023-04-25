@@ -10,6 +10,8 @@
 
 using namespace std;
 
+//---------------------------------------- String Manipulation Functions ----------------------------------------//
+
 const std::string WHITESPACE = " \n\r\t\f\v";
 
 #if 0
@@ -78,15 +80,10 @@ void _removeBackgroundSign(char* cmd_line) {
   cmd_line[str.find_last_not_of(WHITESPACE, idx) + 1] = 0;
 }
 
-// TODO: Add your implementation for classes in Commands.h 
+//----------------------------------------------------------------------------------------------//
 
-//******Constructors******//
-Command::Command(const char* cmd_line): cmd_line(cmd_line){}
-BuiltInCommand::BuiltInCommand(const char* cmd_line): Command(cmd_line){}
-//************************//
 
-// string SmallShell::prompt = "smash";
-
+//----------------------------------- SmallShell Class Methods  -----------------------------------//
 SmallShell::SmallShell() :  prompt("smash"),
                             pid(getppid()),
                             last_dir(nullptr){
@@ -150,9 +147,47 @@ void SmallShell::executeCommand(const char *cmd_line) {
   return;
 }
 
+std::string& SmallShell::get_prompt(){
+  return this->prompt;
+}
+
+void SmallShell::set_prompt(const std::string& new_prompt){
+  this->prompt = new_prompt;
+
+}
+
+//----------------------------------------------------------------------------------------------//
 
 
-/*****  Command Implementations  ****/
+//----------------------------------- JobsList Class Methods  -----------------------------------//
+
+
+JobsList::JobsList() : jobs_list(){}
+
+void JobsList::addJob(Command* cmd, bool isStopped = false){
+  int job_id = 0;
+  
+  // auto max_it = std::max(jobs_list.begin(), jobs_list.end(), 
+  //       [](JobEntry& a, JobEntry& b) { return a.get_job_id() < b.get_job_id(); });
+  //   if (max_it != jobs_list.end()) {
+  //       job_id = max_it->get_job_id() + 1;
+  //   }
+  //   else{
+  //     job_id += 1;
+  //   }
+  int max_job_id = jobs_list.end()->get_job_id();
+  pid_t pid = cmd->pid; 
+  jobs_list.push_back(JobEntry(job_id=(max_job_id+1), pid=pid));
+
+}
+//----------------------------------------------------------------------------------------------//
+
+
+
+//----------------------------------- Command Class Methods  -----------------------------------//
+
+Command::Command(const char* cmd_line): cmd_line(cmd_line), pid(getpid()){}
+BuiltInCommand::BuiltInCommand(const char* cmd_line): Command(cmd_line){}
 /*
 What we know:
 1. Each command gets cmd_line as is
@@ -179,11 +214,10 @@ void ChangePromptCommand::execute(){
   SmallShell& smash = SmallShell::getInstance();
   printf(*args_parsed);
   if (num_args >= 1){
-    smash.prompt = string(args_parsed[1]);
+    smash.set_prompt(string(args_parsed[1]));
   } else{
-    smash.prompt = string("smash");
+    smash.set_prompt("smash");
   }
-  // smash.change_prompt(args_parsed[1]);
   free(args_parsed);
   return;
 
@@ -232,5 +266,4 @@ void ChangeDirCommand::execute(){
     //TODO: FINISH
 }
 
-
-//********** JobsList ***********//
+//----------------------------------------------------------------------------------------------//
