@@ -53,7 +53,8 @@ class RedirectionCommand : public Command {
 };
 
 class ChangeDirCommand : public BuiltInCommand {
-// TODO: Add your data members public:
+// TODO: Add your data members 
+public:
   ChangeDirCommand(const char* cmd_line, char** plastPwd);
   virtual ~ChangeDirCommand() {}
   void execute() override;
@@ -95,11 +96,14 @@ class JobsList {
   class JobEntry {
     const int job_id;
     pid_t pid;
-
+    const time_t init_time;
+    bool is_stopped;
   public:
     JobEntry() = delete;
-    JobEntry(const int& job_id, pid_t& pid) : job_id(job_id), 
-                                      pid(pid){}
+    JobEntry(const int& job_id, pid_t& pid, const time_t& init_time, bool& is_stopped) : job_id(job_id), 
+                                      pid(pid),
+                                      init_time(init_time),
+                                      is_stopped(is_stopped){}
     ~JobEntry() = default;
     const int& get_job_id(){
       return this->job_id;

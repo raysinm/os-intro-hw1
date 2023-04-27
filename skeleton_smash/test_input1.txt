@@ -1,4 +1,4 @@
-sleep 1
-pwd
 chprompt hello
-
+chprompt
+pwd
+quit

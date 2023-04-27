@@ -31,10 +31,10 @@ string _ltrim(const std::string& s)
   return (start == std::string::npos) ? "" : s.substr(start);
 }
 
-string _rtrim(const std::string& s)
+string _rtrim(const std::string& s) //returns a string (that includes WHITESPACE)
 {
   size_t end = s.find_last_not_of(WHITESPACE);
-  return (end == std::string::npos) ? "" : s.substr(0, end + 1);
+  return (end == std::string::npos) ? "" : s.substr(0, end + 1);  //end==npos only if there was no non-whitespace character found.
 }
 
 string _trim(const std::string& s)
@@ -57,6 +57,8 @@ int _parseCommandLine(const char* cmd_line, char** args) {
   FUNC_EXIT()
 }
 
+// std::vector<string>& parse_cmd_line(const char** cmd_line)
+
 bool _isBackgroundComamnd(const char* cmd_line) {
   const string str(cmd_line);
   return str[str.find_last_not_of(WHITESPACE)] == '&';
@@ -78,6 +80,11 @@ void _removeBackgroundSign(char* cmd_line) {
   cmd_line[idx] = ' ';
   // truncate the command line string up to the last non-space character
   cmd_line[str.find_last_not_of(WHITESPACE, idx) + 1] = 0;
+}
+
+vector<string>&  parse(const char* cmd_line){
+  vector<string>* cmd_parsed = new vector<string>;
+  
 }
 
 //----------------------------------------------------------------------------------------------//
@@ -122,15 +129,25 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
   */
 
  //TODO: parse command!
-  
-  std::string cmd_s = _trim(string(cmd_line));
+  // vector<string> cmd_parsed = parse(cmd_line);
+
+  std::string cmd_s = _trim(string(cmd_line));  // cmd_s is a string that includes whitespace within
   string firstWord = cmd_s.substr(0, cmd_s.find_first_of(" \n"));
   
   if (firstWord.compare("chprompt") == 0) {
     return new ChangePromptCommand(cmd_line);
   }
+  else if(firstWord.compare("showpid") == 0) {
+    return new ShowPidCommand(cmd_line);
+  }
   else if(firstWord.compare("pwd") == 0) {
     return new GetCurrDirCommand(cmd_line);
+  }
+  else if(firstWord.compare("cd") == 0) {
+    return new ChangeDirCommand(cmd_line, this->last_dir);
+  }
+  else if(firstWord.compare("quit")==0){
+    return new QuitCommand(cmd_line, jobs_list);
   }
   return nullptr;
 }
@@ -143,7 +160,11 @@ void SmallShell::executeCommand(const char *cmd_line) {
   // Please note that you must fork smash process for some commands (e.g., external commands....)
   
   Command* cmd = CreateCommand(cmd_line);
-  cmd->execute();
+  if (cmd != nullptr){
+    cmd->execute();
+    delete cmd;
+  }
+  
   return;
 }
 
@@ -164,7 +185,7 @@ void SmallShell::set_prompt(const std::string& new_prompt){
 
 JobsList::JobsList() : jobs_list(){}
 
-void JobsList::addJob(Command* cmd, bool isStopped = false){
+void JobsList::addJob(Command* cmd, bool isStopped){
   int job_id = 0;
   
   // auto max_it = std::max(jobs_list.begin(), jobs_list.end(), 
@@ -175,9 +196,19 @@ void JobsList::addJob(Command* cmd, bool isStopped = false){
   //   else{
   //     job_id += 1;
   //   }
-  int max_job_id = jobs_list.end()->get_job_id();
+  int max_job_id = 0;
+  if (jobs_list.size() > 0){
+    max_job_id = jobs_list.end()->get_job_id();
+  }
   pid_t pid = cmd->pid; 
-  jobs_list.push_back(JobEntry(job_id=(max_job_id+1), pid=pid));
+  time_t time;
+  if (std::time(&time) < 0){
+    return; //TODO: error handling. also, should we do this time thing here or outside?
+  }
+  jobs_list.push_back(JobEntry(job_id=(max_job_id+1), pid=pid, time, isStopped));
+}
+
+void JobsList::printJobsList(){
 
 }
 //----------------------------------------------------------------------------------------------//
@@ -205,14 +236,14 @@ ChangePromptCommand::ChangePromptCommand(const char* cmd_line) : BuiltInCommand(
 void ChangePromptCommand::execute(){
   //TODO: Consider parsing in a seperate helper function
   
-  char** args_parsed = (char**) malloc((COMMAND_MAX_ARGS+1)* COMMAND_ARGS_MAX_LENGTH);   //FIXME: 1. Currently takes name of command as first argument  
+  char** args_parsed = (char**) malloc((COMMAND_MAX_ARGS+1)* sizeof(char*));   //FIXME: 1. Currently takes name of command as first argument  
   if (args_parsed == nullptr){  //TODO: error handling
     return; //TODO: Maybe assert?
   }                                                                                        //2. Whats the right allocation size?
-  int num_args = _parseCommandLine(this->cmd_line, args_parsed) - 1;
+  int num_args = _parseCommandLine(cmd_line, args_parsed) - 1;
 
   SmallShell& smash = SmallShell::getInstance();
-  printf(*args_parsed);
+  // printf(*args_parsed);
   if (num_args >= 1){
     smash.set_prompt(string(args_parsed[1]));
   } else{
@@ -220,7 +251,6 @@ void ChangePromptCommand::execute(){
   }
   free(args_parsed);
   return;
-
 }
 
 //showpid
@@ -264,6 +294,15 @@ void ChangeDirCommand::execute(){
 
     // }
     //TODO: FINISH
+}
+
+
+//quit
+QuitCommand::QuitCommand(const char* cmd_line, JobsList* jobs) : BuiltInCommand(cmd_line){}
+
+void QuitCommand::execute(){
+  exit(0);
+  return;
 }
 
 //----------------------------------------------------------------------------------------------//

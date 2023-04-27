@@ -1,1 +1,2 @@
+smash> hello> smash> /home/mayar/Technion/os-intro-hw1/skeleton_smash
 smash> 
