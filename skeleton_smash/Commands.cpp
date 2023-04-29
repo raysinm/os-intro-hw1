@@ -10,6 +10,20 @@
 
 using namespace std;
 
+//---------------------------------------- Miscellenius Functions ----------------------------------------//
+
+int getCurrDir(char* buf){
+  if(buf != nullptr){
+      if(getcwd(buf, PATH_MAX) != NULL){
+        return 0;
+     }
+    }
+  return -1;
+}
+//----------------------------------------------------------------------------------------------//
+
+
+
 //---------------------------------------- String Manipulation Functions ----------------------------------------//
 
 const std::string WHITESPACE = " \n\r\t\f\v";
@@ -258,12 +272,9 @@ ShowPidCommand::ShowPidCommand(const char* cmd_line): BuiltInCommand(cmd_line){}
 
 void ShowPidCommand::execute(){
     SmallShell& smash = SmallShell::getInstance();
-    cout << "smash pid is " << smash.pid;
+    cout << "smash pid is " << smash.pid << endl;
     return;
 }
-
-
-
 
 
 //pwd
@@ -271,16 +282,12 @@ GetCurrDirCommand::GetCurrDirCommand(const char* cmd_line): BuiltInCommand(cmd_l
 
 void GetCurrDirCommand::execute(){
     char* buf = (char*) malloc(PATH_MAX * sizeof(char));    //TODO: Change to MAX_PATH(?)
-    if(buf != nullptr){
-      if(getcwd(buf, PATH_MAX) != NULL){
-        cout << buf << endl;
-     }
-    }
+    
     free(buf);
 }
 
 //cd
-ChangeDirCommand::ChangeDirCommand(const char* cmd_line, char** plastPwd): BuiltInCommand(cmd_line){}
+ChangeDirCommand::ChangeDirCommand(const char* cmd_line, char** plastPwd): BuiltInCommand(cmd_line), {}
 
 void ChangeDirCommand::execute(){
     char** args_parsed = (char**) malloc((COMMAND_MAX_ARGS+1)* COMMAND_ARGS_MAX_LENGTH);   //FIXME: 1. Currently takes name of command as first argument  
@@ -288,12 +295,29 @@ void ChangeDirCommand::execute(){
     return; //TODO: Maybe assert?
     }                                                                                        //2. Whats the right allocation size?
     int num_args = _parseCommandLine(this->cmd_line, args_parsed) - 1;
+    
+    if (num_args == 0){
+      free(args_parsed);
+      return;
+    }
 
     SmallShell& smash = SmallShell::getInstance();
-    // if (num_args == 0){
 
-    // }
-    //TODO: FINISH
+    if (num_args > 1){
+      cout << "smash error: cd: too many arguments" << endl;
+      return;
+    }
+    const char* path = args_parsed[1];
+
+    if (path == "-"){
+      if(smash.last_dir == nullptr){
+        cout << "smash error: cd: OLDPWD not set" << endl;
+        return;
+      }
+      else{
+        smash.setLastDir()
+      }
+    }
 }
 
 

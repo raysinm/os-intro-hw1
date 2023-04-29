@@ -5,6 +5,10 @@
 
 #define COMMAND_ARGS_MAX_LENGTH (200)
 #define COMMAND_MAX_ARGS (20)
+enum class DirErrors{
+  BUF_NULLPTR,
+  FAILED_GETCWD
+};
 
 class Command {
  protected:
@@ -53,7 +57,6 @@ class RedirectionCommand : public Command {
 };
 
 class ChangeDirCommand : public BuiltInCommand {
-// TODO: Add your data members 
 public:
   ChangeDirCommand(const char* cmd_line, char** plastPwd);
   virtual ~ChangeDirCommand() {}

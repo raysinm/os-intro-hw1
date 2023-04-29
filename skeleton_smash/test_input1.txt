@@ -1,4 +1,6 @@
 chprompt hello
+
 chprompt
 pwd
+showpid
 quit

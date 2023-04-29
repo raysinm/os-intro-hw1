@@ -1,2 +1,3 @@
-smash> hello> smash> /home/mayar/Technion/os-intro-hw1/skeleton_smash
+smash> hello> hello> smash> /home/mayar/Technion/os-intro-hw1/skeleton_smash
+smash> smash pid is 8286
 smash> 
