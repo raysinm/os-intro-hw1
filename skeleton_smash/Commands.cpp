@@ -120,6 +120,11 @@ SmallShell::~SmallShell() {
     }
 }
 
+void SmallShell::setLastDir(){
+  if(chdir(*last_dir) == -1)
+    cout << "smash error: chdir failed" << endl;
+}
+
 /**
 * Creates and returns a pointer to Command class which matches the given command line (cmd_line)
 */
@@ -287,7 +292,7 @@ void GetCurrDirCommand::execute(){
 }
 
 //cd
-ChangeDirCommand::ChangeDirCommand(const char* cmd_line, char** plastPwd): BuiltInCommand(cmd_line), {}
+ChangeDirCommand::ChangeDirCommand(const char* cmd_line, char** plastPwd): BuiltInCommand(cmd_line) {}
 
 void ChangeDirCommand::execute(){
     char** args_parsed = (char**) malloc((COMMAND_MAX_ARGS+1)* COMMAND_ARGS_MAX_LENGTH);   //FIXME: 1. Currently takes name of command as first argument  
@@ -309,15 +314,21 @@ void ChangeDirCommand::execute(){
     }
     const char* path = args_parsed[1];
 
-    if (path == "-"){
+    if (strcmp(path, "-") == 0){
       if(smash.last_dir == nullptr){
         cout << "smash error: cd: OLDPWD not set" << endl;
         return;
       }
       else{
-        smash.setLastDir()
+        smash.setLastDir();
+        return;
       }
+
     }
+
+    if(chdir(path) == -1){
+      cout << "smash error: chdir failed" << endl;
+      }
 }
 
 

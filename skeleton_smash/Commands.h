@@ -211,6 +211,7 @@ public:   // Methods
     // Instantiated on first use.
     return instance;
   }
+  void setLastDir();
   ~SmallShell();
   
   void executeCommand(const char* cmd_line);
