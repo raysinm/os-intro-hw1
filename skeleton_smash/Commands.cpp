@@ -121,8 +121,18 @@ SmallShell::~SmallShell() {
 }
 
 void SmallShell::setLastDir(){
-  if(chdir(*last_dir) == -1)
+  char* buf = (char*) malloc(PATH_MAX * sizeof(char));
+  if(getCurrDir(buf) != 0){
+    cout << "smash error: getcwd failed" << endl;
+    return;
+  }
+  if(chdir(*last_dir) == -1){
     cout << "smash error: chdir failed" << endl;
+    free(buf);
+    return;
+  }
+  free(*last_dir);
+  *last_dir = buf; 
 }
 
 /**
@@ -326,9 +336,18 @@ void ChangeDirCommand::execute(){
 
     }
 
+    char* buf = (char*) malloc(PATH_MAX * sizeof(char));
+    if(getCurrDir(buf) != 0){
+      cout << "smash error: getcwd failed" << endl;
+      return;
+    }  
     if(chdir(path) == -1){
       cout << "smash error: chdir failed" << endl;
-      }
+      free(buf);
+    }
+    free(*smash.last_dir);
+    *smash.last_dir = buf;
+
 }
 
 

@@ -1,3 +1,2 @@
-smash> hello> hello> smash> smash> smash> smash> smash error: cd: OLDPWD not set
-smash> smash> smash pid is 9177
+smash> hello> hello> smash> smash> smash pid is 19321
 smash> 
