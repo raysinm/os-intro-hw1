@@ -1,2 +1,4 @@
-smash> hello> hello> smash> smash> smash pid is 19321
+smash> hello> hello> smash> smash> smash error: chdir failed
+smash> smash> smash error: cd: OLDPWD not set
+smash> smash> smash pid is 34321
 smash> 

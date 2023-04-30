@@ -57,6 +57,8 @@ class RedirectionCommand : public Command {
 };
 
 class ChangeDirCommand : public BuiltInCommand {
+public: 
+  char** cmd_lastdir;
 public:
   ChangeDirCommand(const char* cmd_line, char** plastPwd);
   virtual ~ChangeDirCommand() {}

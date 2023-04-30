@@ -132,7 +132,7 @@ void SmallShell::setLastDir(){
     return;
   }
   free(*last_dir);
-  *last_dir = buf; 
+  last_dir = &buf; 
 }
 
 /**
@@ -302,7 +302,8 @@ void GetCurrDirCommand::execute(){
 }
 
 //cd
-ChangeDirCommand::ChangeDirCommand(const char* cmd_line, char** plastPwd): BuiltInCommand(cmd_line) {}
+ChangeDirCommand::ChangeDirCommand(const char* cmd_line, char** plastPwd): BuiltInCommand(cmd_line),
+                                                                            cmd_lastdir(plastPwd) {} //! Maybe better to allocate? I dont want memory leak
 
 void ChangeDirCommand::execute(){
     char** args_parsed = (char**) malloc((COMMAND_MAX_ARGS+1)* COMMAND_ARGS_MAX_LENGTH);   //FIXME: 1. Currently takes name of command as first argument  
@@ -323,31 +324,37 @@ void ChangeDirCommand::execute(){
       return;
     }
     const char* path = args_parsed[1];
+    char* buf = (char*) malloc(PATH_MAX * sizeof(char));
 
     if (strcmp(path, "-") == 0){
-      if(smash.last_dir == nullptr){
+      if(cmd_lastdir == nullptr){
         cout << "smash error: cd: OLDPWD not set" << endl;
         return;
       }
       else{
         smash.setLastDir();
+      }
+    }
+    else{
+      if(getCurrDir(buf) != 0){
+        cout << "smash error: getcwd failed" << endl;
+        free(args_parsed);
+        free(buf);
+        return;
+      }  
+      else if(chdir(path) == -1){
+        cout << "smash error: chdir failed" << endl;
+        free(args_parsed);
+        free(buf);
         return;
       }
-
     }
-
-    char* buf = (char*) malloc(PATH_MAX * sizeof(char));
-    if(getCurrDir(buf) != 0){
-      cout << "smash error: getcwd failed" << endl;
-      return;
-    }  
-    if(chdir(path) == -1){
-      cout << "smash error: chdir failed" << endl;
-      free(buf);
-    }
-    free(*smash.last_dir);
-    *smash.last_dir = buf;
-
+    free(*smash.last_dir);   ///dangerous
+    smash.last_dir = &buf;
+    
+    free(args_parsed);
+    
+    return;
 }
 
 
