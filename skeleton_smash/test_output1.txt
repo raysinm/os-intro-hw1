@@ -1,4 +1,7 @@
-smash> hello> hello> smash> smash> smash error: chdir failed
-smash> smash> smash error: cd: OLDPWD not set
-smash> smash> smash pid is 34321
+smash> hello> hello> smash> /home/stav/os1/os-intro-hw1/skeleton_smash
+smash> smash error: chdir failed
+smash> /home/stav/os1/os-intro-hw1/skeleton_smash
+smash> smash error: cd: OLDPWD not set
+smash> /home/stav/os1/os-intro-hw1/skeleton_smash
+smash> smash pid is 1890
 smash> 

@@ -86,6 +86,20 @@ class ChangePromptCommand : public BuiltInCommand {
     void execute() override;
 };
 
+class FgCommand : public BuiltInCommand {
+  public:
+    FgCommand(const char* cmd_line);
+    virtual ~FgCommand() {}
+    void execute() override;
+};
+
+class BgCommand : public BuiltInCommand {
+  public:
+    BgCommand(const char* cmd_line);
+    virtual ~BgCommand() {}
+    void execute() override;
+};
+
 class JobsList;
 class QuitCommand : public BuiltInCommand {
 // TODO: Add your data members

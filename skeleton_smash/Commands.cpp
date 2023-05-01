@@ -178,6 +178,12 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
   else if(firstWord.compare("quit")==0){
     return new QuitCommand(cmd_line, jobs_list);
   }
+  else if(firstWord.compare("fg")==0){
+    return new FgCommand(cmd_line);
+  }
+  else if(firstWord.compare("bg")==0){
+    return new BgCommand(cmd_line);
+  }
   return nullptr;
 }
 
@@ -297,7 +303,10 @@ GetCurrDirCommand::GetCurrDirCommand(const char* cmd_line): BuiltInCommand(cmd_l
 
 void GetCurrDirCommand::execute(){
     char* buf = (char*) malloc(PATH_MAX * sizeof(char));    //TODO: Change to MAX_PATH(?)
-    
+    if(getCurrDir(buf) != 0){
+      cout << "smash error: getcwd failed" << endl;
+    }
+    cout << buf << endl;
     free(buf);
 }
 
@@ -325,6 +334,9 @@ void ChangeDirCommand::execute(){
     }
     const char* path = args_parsed[1];
     char* buf = (char*) malloc(PATH_MAX * sizeof(char));
+    if (buf == nullptr){  //TODO: error handling
+    return; //TODO: Maybe assert?
+    } 
 
     if (strcmp(path, "-") == 0){
       if(cmd_lastdir == nullptr){
@@ -349,12 +361,44 @@ void ChangeDirCommand::execute(){
         return;
       }
     }
-    free(*smash.last_dir);   ///dangerous
+    if(smash.last_dir != nullptr){
+      free(*smash.last_dir);   ///less dangerous?
+    }
     smash.last_dir = &buf;
     
     free(args_parsed);
     
     return;
+}
+
+
+//Fg
+FgCommand::FgCommand(const char* cmd_line): BuiltInCommand(cmd_line) {}
+
+void FgCommand::execute(){
+    char** args_parsed = (char**) malloc((COMMAND_MAX_ARGS+1)* COMMAND_ARGS_MAX_LENGTH);   //FIXME: 1. Currently takes name of command as first argument  
+    if (args_parsed == nullptr){  //TODO: error handling
+    return; //TODO: Maybe assert?
+    }                                                                                        //2. Whats the right allocation size?
+    int num_args = _parseCommandLine(this->cmd_line, args_parsed) - 1;
+    
+    if ((num_args == 0) || (num_args > 1)){
+      free(args_parsed);
+      cout << "smash error: fg: invalid arguments" << endl;
+      return;
+    }
+
+    SmallShell& smash = SmallShell::getInstance();
+    const char* job_id = args_parsed[1];
+  
+}
+
+
+//Bg
+BgCommand::BgCommand(const char* cmd_line): BuiltInCommand(cmd_line) {}
+
+void BgCommand::execute(){
+  
 }
 
 
