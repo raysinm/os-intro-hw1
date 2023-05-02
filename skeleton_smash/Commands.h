@@ -135,9 +135,10 @@ class JobsList {
       if (std::time(&curr_time) < 0){
         return -1;  //error handling
       }
-      return (curr_time - init_time); 
+      return (int(curr_time - init_time)); 
     }
     bool isStopped(){ return this->is_stopped;}
+    std::string& getCmdName(){ return this->cmd_name;}
   };
  // TODO: Add your data members
  public:
@@ -156,7 +157,7 @@ class JobsList {
 };
 
 class JobsCommand : public BuiltInCommand {
- // TODO: Add your data members
+ JobsList* jobs;
  public:
   JobsCommand(const char* cmd_line, JobsList* jobs);
   virtual ~JobsCommand() {}

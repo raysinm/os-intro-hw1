@@ -210,6 +210,9 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
   else if(firstWord.compare("bg")==0){
     return new BgCommand(cmd_line);
   }
+  else if(firstWord.compare("jobs")==0){
+    return new JobsCommand(cmd_line, &jobs_list);
+  }
   return nullptr;
 }
 
@@ -278,12 +281,15 @@ void JobsList::printJobsList(){
   int count = 1;
   for(auto job : jobs_list){
     
+
+    cout << "[" << count << "] ";
+    cout << job.getCmdName() << " : ";
+    cout << job.getJobPid() << " ";
+    cout << job.getTimeElapsed() << " ";
     if (job.isStopped()){
-      cout << "[" << count << "] " ;  //TODO FINISHHHHHHHH
+      cout << "(stopped)";
     }
-    else{
-      
-    } 
+    cout << endl;
     count++;
   }
 }
@@ -434,7 +440,7 @@ void ChangeDirCommand::execute(){
 }
 
 
-//Fg
+//fg
 FgCommand::FgCommand(const char* cmd_line): BuiltInCommand(cmd_line) {}
 
 void FgCommand::execute(){
@@ -461,13 +467,21 @@ void FgCommand::execute(){
 }
 
 
-//Bg
+//bg
 BgCommand::BgCommand(const char* cmd_line): BuiltInCommand(cmd_line) {}
 
 void BgCommand::execute(){
   
 }
 
+//jobs
+JobsCommand::JobsCommand(const char* cmd_line, JobsList* jobs): BuiltInCommand(cmd_line), jobs(jobs){}
+
+void JobsCommand::execute(){
+  if (jobs != nullptr){
+    jobs->printJobsList();
+  }
+}
 
 //quit
 QuitCommand::QuitCommand(const char* cmd_line, JobsList* jobs) : BuiltInCommand(cmd_line){}
