@@ -39,6 +39,25 @@ const std::string WHITESPACE = " \n\r\t\f\v";
 #define FUNC_EXIT()
 #endif
 
+vector<string>* _vectorize_cmdline(const char* cmd_line){
+  std::vector<string>* cmd_vec = new std::vector<string>();
+  char** args_parsed = (char**) malloc((COMMAND_MAX_ARGS+1)* sizeof(char*));   //FIXME: 1. Currently takes name of command as first argument  
+  if (args_parsed == nullptr){  //TODO: error handling
+    delete cmd_vec;
+    return; //TODO: Maybe assert?
+  }           
+  int num_args = _parseCommandLine(cmd_line, args_parsed) - 1;
+  if ((num_args-1)>COMMAND_MAX_ARGS){
+    delete cmd_vec;
+    return nullptr;
+  }
+  for (int i=0; i<num_args; i++){
+    cmd_vec->push_back(args_parsed[i]);
+  }
+  return cmd_vec; 
+
+} 
+
 string _ltrim(const std::string& s)
 {
   size_t start = s.find_first_not_of(WHITESPACE);
@@ -224,27 +243,41 @@ void JobsList::addJob(Command* cmd, bool isStopped){
   int job_id = 0;
   
   // auto max_it = std::max(jobs_list.begin(), jobs_list.end(), 
-  //       [](JobEntry& a, JobEntry& b) { return a.get_job_id() < b.get_job_id(); });
+  //       [](JobEntry& a, JobEntry& b) { return a.getJobId() < b.getJobId(); });
   //   if (max_it != jobs_list.end()) {
-  //       job_id = max_it->get_job_id() + 1;
+  //       job_id = max_it->getJobId() + 1;
   //   }
   //   else{
   //     job_id += 1;
   //   }
   int max_job_id = 0;
-  if (jobs_list.size() > 0){
-    max_job_id = jobs_list.end()->get_job_id();
+  for (auto job : jobs_list){
+    if (job.getJobId() > max_job_id){
+        max_job_id = job.getJobId();
+    }
   }
+
   pid_t pid = cmd->pid; 
   time_t time;
+  string cmd_name = (*(cmd->cmd_vec))[0]; //might be prone to bugs
   if (std::time(&time) < 0){
     return; //TODO: error handling. also, should we do this time thing here or outside?
   }
-  jobs_list.push_back(JobEntry(job_id=(max_job_id+1), pid=pid, time, isStopped));
+  jobs_list.push_back(JobEntry(job_id=(max_job_id+1), pid=pid, time, isStopped, cmd_name));
 }
 
 void JobsList::printJobsList(){
-
+  int count = 1;
+  for(auto job : jobs_list){
+    
+    if (job.isStopped()){
+      cout << "[" << count << "] " ;  //TODO FINISHHHHHHHH
+    }
+    else{
+      
+    } 
+    count++;
+  }
 }
 //----------------------------------------------------------------------------------------------//
 
@@ -252,7 +285,12 @@ void JobsList::printJobsList(){
 
 //----------------------------------- Command Class Methods  -----------------------------------//
 
-Command::Command(const char* cmd_line): cmd_line(cmd_line), pid(getpid()){}
+Command::Command(const char* cmd_line): cmd_line(cmd_line), pid(getpid()), cmd_vec(nullptr){
+  cmd_vec = _vectorize_cmdline(cmd_line);
+}
+Command::~Command(){
+  delete this->cmd_vec;
+}
 BuiltInCommand::BuiltInCommand(const char* cmd_line): Command(cmd_line){}
 /*
 What we know:
@@ -271,20 +309,24 @@ ChangePromptCommand::ChangePromptCommand(const char* cmd_line) : BuiltInCommand(
 void ChangePromptCommand::execute(){
   //TODO: Consider parsing in a seperate helper function
   
-  char** args_parsed = (char**) malloc((COMMAND_MAX_ARGS+1)* sizeof(char*));   //FIXME: 1. Currently takes name of command as first argument  
-  if (args_parsed == nullptr){  //TODO: error handling
-    return; //TODO: Maybe assert?
-  }                                                                                        //2. Whats the right allocation size?
-  int num_args = _parseCommandLine(cmd_line, args_parsed) - 1;
-
+  // char** args_parsed = (char**) malloc((COMMAND_MAX_ARGS+1)* sizeof(char*));   //FIXME: 1. Currently takes name of command as first argument  
+  // if (args_parsed == nullptr){  //TODO: error handling
+  //   return; //TODO: Maybe assert?
+  // }                                                                                        //2. Whats the right allocation size?
+  // int num_args = _parseCommandLine(cmd_line, args_parsed) - 1;
+  if(this->cmd_vec==nullptr){
+    return; //error handling
+  }
+  int num_args = cmd_vec->size();
   SmallShell& smash = SmallShell::getInstance();
   // printf(*args_parsed);
   if (num_args >= 1){
-    smash.set_prompt(string(args_parsed[1]));
+    smash.set_prompt((*cmd_vec)[1]);
   } else{
     smash.set_prompt("smash");
   }
-  free(args_parsed);
+  //No need to free anything, cmd_vec will det deleted in cmd destroyer
+  // free(args_parsed);
   return;
 }
 
@@ -315,14 +357,19 @@ ChangeDirCommand::ChangeDirCommand(const char* cmd_line, char** plastPwd): Built
                                                                             cmd_lastdir(plastPwd) {} //! Maybe better to allocate? I dont want memory leak
 
 void ChangeDirCommand::execute(){
-    char** args_parsed = (char**) malloc((COMMAND_MAX_ARGS+1)* COMMAND_ARGS_MAX_LENGTH);   //FIXME: 1. Currently takes name of command as first argument  
-    if (args_parsed == nullptr){  //TODO: error handling
-    return; //TODO: Maybe assert?
-    }                                                                                        //2. Whats the right allocation size?
-    int num_args = _parseCommandLine(this->cmd_line, args_parsed) - 1;
+    // char** args_parsed = (char**) malloc((COMMAND_MAX_ARGS+1)* COMMAND_ARGS_MAX_LENGTH);   //FIXME: 1. Currently takes name of command as first argument  
+    // if (args_parsed == nullptr){  //TODO: error handling
+    // return; //TODO: Maybe assert?
+    // }                                                                                        //2. Whats the right allocation size?
+    // int num_args = _parseCommandLine(this->cmd_line, args_parsed) - 1;
     
+    if(this->cmd_vec==nullptr){
+      return; //error handling
+    }
+    int num_args = cmd_vec->size();
+
     if (num_args == 0){
-      free(args_parsed);
+      // free(args_parsed);
       return;
     }
 
@@ -332,7 +379,7 @@ void ChangeDirCommand::execute(){
       cout << "smash error: cd: too many arguments" << endl;
       return;
     }
-    const char* path = args_parsed[1];
+    const char* path = (*cmd_vec)[1].c_str();
     char* buf = (char*) malloc(PATH_MAX * sizeof(char));
     if (buf == nullptr){  //TODO: error handling
     return; //TODO: Maybe assert?
@@ -350,13 +397,13 @@ void ChangeDirCommand::execute(){
     else{
       if(getCurrDir(buf) != 0){
         cout << "smash error: getcwd failed" << endl;
-        free(args_parsed);
+        // free(args_parsed);
         free(buf);
         return;
       }  
       else if(chdir(path) == -1){
         cout << "smash error: chdir failed" << endl;
-        free(args_parsed);
+        // free(args_parsed);
         free(buf);
         return;
       }
@@ -366,7 +413,7 @@ void ChangeDirCommand::execute(){
     }
     smash.last_dir = &buf;
     
-    free(args_parsed);
+    // free(args_parsed);
     
     return;
 }
@@ -376,20 +423,25 @@ void ChangeDirCommand::execute(){
 FgCommand::FgCommand(const char* cmd_line): BuiltInCommand(cmd_line) {}
 
 void FgCommand::execute(){
-    char** args_parsed = (char**) malloc((COMMAND_MAX_ARGS+1)* COMMAND_ARGS_MAX_LENGTH);   //FIXME: 1. Currently takes name of command as first argument  
-    if (args_parsed == nullptr){  //TODO: error handling
-    return; //TODO: Maybe assert?
-    }                                                                                        //2. Whats the right allocation size?
-    int num_args = _parseCommandLine(this->cmd_line, args_parsed) - 1;
+    // char** args_parsed = (char**) malloc((COMMAND_MAX_ARGS+1)* COMMAND_ARGS_MAX_LENGTH);   //FIXME: 1. Currently takes name of command as first argument  
+    // if (args_parsed == nullptr){  //TODO: error handling
+    // return; //TODO: Maybe assert?
+    // }                                                                                        //2. Whats the right allocation size?
+    // int num_args = _parseCommandLine(this->cmd_line, args_parsed) - 1;
     
+    if(this->cmd_vec==nullptr){
+      return; //error handling
+    }
+    int num_args = cmd_vec->size();
+
     if ((num_args == 0) || (num_args > 1)){
-      free(args_parsed);
+      // free(args_parsed);
       cout << "smash error: fg: invalid arguments" << endl;
       return;
     }
 
     SmallShell& smash = SmallShell::getInstance();
-    const char* job_id = args_parsed[1];
+    auto job_id = (*cmd_vec)[1];
   
 }
 

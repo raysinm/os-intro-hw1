@@ -15,9 +15,11 @@ class Command {
  public:  // Data
   const char* cmd_line;
   const pid_t pid;
+  string cmd_name;
+  vector<string>* cmd_vec;
  public:  // Methods
   Command(const char* cmd_line);
-  virtual ~Command() = default;
+  virtual ~Command();
   virtual void execute() = 0;
   //virtual void prepare();
   //virtual void cleanup();
@@ -113,20 +115,31 @@ public:
 class JobsList {
  public:
   class JobEntry {
-    const int job_id;
+    int job_id;
     pid_t pid;
     const time_t init_time;
     bool is_stopped;
+    string cmd_name; 
   public:
     JobEntry() = delete;
-    JobEntry(const int& job_id, pid_t& pid, const time_t& init_time, bool& is_stopped) : job_id(job_id), 
+    JobEntry(const int& job_id, pid_t& pid, const time_t& init_time, bool& is_stopped, string& name) : job_id(job_id), 
                                       pid(pid),
                                       init_time(init_time),
-                                      is_stopped(is_stopped){}
+                                      is_stopped(is_stopped),
+                                      cmd_name(name){}
     ~JobEntry() = default;
-    const int& get_job_id(){
-      return this->job_id;
+    const int& getJobId(){ return this->job_id;}
+    
+    const int& getJobPid(){ return this->pid;}
+    
+    const int& getTimeElapsed(){
+      time_t curr_time;
+      if (std::time(&curr_time) < 0){
+        return -1;  //error handling
+      }
+      return (curr_time - init_time); 
     }
+    bool isStopped(){ return this->is_stopped;}
   };
  // TODO: Add your data members
  public:
