@@ -1,5 +1,4 @@
 chprompt hello
-
 chprompt
 pwd
 cd /home/mayar/Technion/os-intro-hw1/skeleton_smash/tryDir
@@ -7,4 +6,6 @@ pwd
 cd -
 pwd
 showpid
+jobs
+
 quit

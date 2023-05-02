@@ -54,3 +54,7 @@ dkms.conf
 
 # Smash things
 smash
+
+# Other things
+ref/
+original_files/

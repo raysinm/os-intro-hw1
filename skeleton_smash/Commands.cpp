@@ -8,6 +8,8 @@
 #include "Commands.h"
 #include <limits.h>
 
+#include <algorithm>
+
 using namespace std;
 
 //---------------------------------------- Miscellenius Functions ----------------------------------------//
@@ -120,6 +122,16 @@ void _removeBackgroundSign(char* cmd_line) {
   
 // }
 
+
+bool isAllDigits(string& s){
+  for (char c : s) {
+        if (!std::isdigit(c)) {
+          return false;
+        }
+    }
+    return true;
+}
+
 //----------------------------------------------------------------------------------------------//
 
 
@@ -211,7 +223,7 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
     return new BgCommand(cmd_line);
   }
   else if(firstWord.compare("jobs")==0){
-    return new JobsCommand(cmd_line, &jobs_list);
+    return new JobsCommand(cmd_line, jobs_list);
   }
   return nullptr;
 }
@@ -278,11 +290,9 @@ void JobsList::addJob(Command* cmd, bool isStopped){
 }
 
 void JobsList::printJobsList(){
-  int count = 1;
-  for(auto job : jobs_list){
-    
 
-    cout << "[" << count << "] ";
+  for(auto job : jobs_list){
+    cout << "[" << job.getJobId() << "] ";
     cout << job.getCmdName() << " : ";
     cout << job.getJobPid() << " ";
     cout << job.getTimeElapsed() << " ";
@@ -290,7 +300,20 @@ void JobsList::printJobsList(){
       cout << "(stopped)";
     }
     cout << endl;
-    count++;
+  }
+}
+JobsList::JobEntry * JobsList::getJobById(int jobId){
+
+  // int target_id = std::stoi((*cmd_vec)[2]);   ///TODO: check the format (stoi will fail if thereare chars)
+  int target_id = jobId;
+  auto it = std::find_if(jobs_list.begin(), jobs_list.end(), 
+    [&target_id](JobsList::JobEntry& job) { return job.getJobId() == target_id; });
+  
+  if (it != jobs_list.end()) {
+    return &(*it);
+  } else {
+    
+    return nullptr;
   }
 }
 //----------------------------------------------------------------------------------------------//
@@ -455,14 +478,25 @@ void FgCommand::execute(){
     }
     int num_args = cmd_vec->size() - 1;
 
-    if ((num_args == 0) || (num_args > 1)){
+    if (num_args > 1 || isAllDigits((*cmd_vec)[1])){
       // free(args_parsed);
       cout << "smash error: fg: invalid arguments" << endl;
       return;
     }
 
     SmallShell& smash = SmallShell::getInstance();
-    auto job_id = (*cmd_vec)[1];
+    int job_id = std::stoi((*cmd_vec)[1]);
+    if(smash.jobs_list->getJobById(job_id) == nullptr){
+      cout << "smash error: fg: job-id " << job_id << " does not exist" << endl;
+    }
+    
+  
+    JobsList::JobEntry *job = smash.jobs_list->getLastJob(&job_id);
+    if (job == nullptr){
+      cout << "smash error: fg: jobs list is empty" << endl;
+    }
+
+    
   
 }
 
@@ -471,6 +505,22 @@ void FgCommand::execute(){
 BgCommand::BgCommand(const char* cmd_line): BuiltInCommand(cmd_line) {}
 
 void BgCommand::execute(){
+  if(this->cmd_vec==nullptr){
+      return; //error handling
+    }
+    int num_args = cmd_vec->size() - 1;
+
+    if (num_args > 1 || isAllDigits((*cmd_vec)[1])){
+      // free(args_parsed);
+      cout << "smash error: bg: invalid arguments" << endl;
+      return;
+    }
+
+    SmallShell& smash = SmallShell::getInstance();
+    int job_id = std::stoi((*cmd_vec)[1]);
+    if(smash.jobs_list->getJobById(job_id) == nullptr){
+      cout << "smash error: bg: job-id " << job_id << " does not exist" << endl;
+    }
   
 }
 
@@ -484,11 +534,46 @@ void JobsCommand::execute(){
 }
 
 //quit
-QuitCommand::QuitCommand(const char* cmd_line, JobsList* jobs) : BuiltInCommand(cmd_line){}
+QuitCommand::QuitCommand(const char* cmd_line, JobsList* jobs) : BuiltInCommand(cmd_line), jobs(jobs){}
 
 void QuitCommand::execute(){
+  for(auto job : jobs->jobs_list){
+    kill(job.getJobPid(), SIGKILL);
+  }
   exit(0);
   return;
+}
+
+//kill
+KillCommand::KillCommand(const char* cmd_line, JobsList* jobs): BuiltInCommand(cmd_line), jobs(jobs){}
+
+void KillCommand::execute(){
+  
+  if(cmd_vec == nullptr){
+    return; //error handling
+  }
+  int num_args = cmd_vec->size() - 1;
+  string job_id = (*cmd_vec)[2];
+  string& sig = (*cmd_vec)[1];  //TODO: check format!!
+  
+  if (num_args != 2 || !isAllDigits(job_id) || sig[0]!='-'){
+    cout << "smash error: kill: invalid arguments" << endl;
+    return; //error handling
+  }
+  auto* jobs_list = &(jobs -> jobs_list);
+  auto job = jobs->getJobById(std::stoi(job_id));
+  if (job == nullptr){
+    // job not found
+    std::cout << "smash error: kill: job-id " << job_id << " does not exist" << std::endl;
+  }
+  else{
+    sig = std::stoi(sig[1:])
+    // if (kill(it->getJobPid(), sig) != 0){
+    //   cout << "TODO : Handle with perror" << endl;
+    // }
+    cout << "signal number " <<  << " was sent to pid " << job->getJobPid()"
+  }
+  
 }
 
 //----------------------------------------------------------------------------------------------//
