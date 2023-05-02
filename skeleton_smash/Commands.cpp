@@ -13,11 +13,9 @@ using namespace std;
 //---------------------------------------- Miscellenius Functions ----------------------------------------//
 
 int getCurrDir(char* buf){
-  if(buf != nullptr){
-      if(getcwd(buf, PATH_MAX) != NULL){
-        return 0;
-     }
-    }
+  if(getcwd(buf, PATH_MAX) != NULL){
+    return 0;
+  }
   return -1;
 }
 //----------------------------------------------------------------------------------------------//
@@ -39,24 +37,6 @@ const std::string WHITESPACE = " \n\r\t\f\v";
 #define FUNC_EXIT()
 #endif
 
-vector<string>* _vectorize_cmdline(const char* cmd_line){
-  std::vector<string>* cmd_vec = new std::vector<string>();
-  char** args_parsed = (char**) malloc((COMMAND_MAX_ARGS+1)* sizeof(char*));   //FIXME: 1. Currently takes name of command as first argument  
-  if (args_parsed == nullptr){  //TODO: error handling
-    delete cmd_vec;
-    return; //TODO: Maybe assert?
-  }           
-  int num_args = _parseCommandLine(cmd_line, args_parsed) - 1;
-  if ((num_args-1)>COMMAND_MAX_ARGS){
-    delete cmd_vec;
-    return nullptr;
-  }
-  for (int i=0; i<num_args; i++){
-    cmd_vec->push_back(args_parsed[i]);
-  }
-  return cmd_vec; 
-
-} 
 
 string _ltrim(const std::string& s)
 {
@@ -90,7 +70,27 @@ int _parseCommandLine(const char* cmd_line, char** args) {
   FUNC_EXIT()
 }
 
-// std::vector<string>& parse_cmd_line(const char** cmd_line)
+vector<string>* _vectorize_cmdline(const char* cmd_line){
+  std::vector<string>* cmd_vec = new std::vector<string>();
+  
+  char** args_parsed = (char**) malloc((COMMAND_MAX_ARGS+1)* sizeof(char*));   //FIXME: 1. Currently takes name of command as first argument  
+  if (args_parsed == nullptr){  //TODO: error handling
+    delete cmd_vec;
+    return nullptr; //TODO: Maybe assert?
+  }           
+  int num_args = _parseCommandLine(cmd_line, args_parsed);
+  if ((num_args-1)>COMMAND_MAX_ARGS){ //TODO: Make sure if command name is an argument
+    delete cmd_vec;
+    free(args_parsed);
+    return nullptr; //error handling
+  }
+  for (int i=0; i<num_args; i++){
+    cmd_vec->push_back(args_parsed[i]);
+  }
+  free(args_parsed);
+  return cmd_vec; 
+
+} 
 
 bool _isBackgroundComamnd(const char* cmd_line) {
   const string str(cmd_line);
@@ -115,10 +115,10 @@ void _removeBackgroundSign(char* cmd_line) {
   cmd_line[str.find_last_not_of(WHITESPACE, idx) + 1] = 0;
 }
 
-vector<string>&  parse(const char* cmd_line){
-  vector<string>* cmd_parsed = new vector<string>;
+// vector<string>&  parse(const char* cmd_line){
+//   vector<string>* cmd_parsed = new vector<string>;
   
-}
+// }
 
 //----------------------------------------------------------------------------------------------//
 
@@ -141,17 +141,24 @@ SmallShell::~SmallShell() {
 
 void SmallShell::setLastDir(){
   char* buf = (char*) malloc(PATH_MAX * sizeof(char));
+  if(buf == nullptr){
+    return; //error handling
+  }
   if(getCurrDir(buf) != 0){
     cout << "smash error: getcwd failed" << endl;
+    free(buf);
     return;
   }
-  if(chdir(*last_dir) == -1){
+  if(chdir(last_dir) == -1){
     cout << "smash error: chdir failed" << endl;
     free(buf);
     return;
   }
-  free(*last_dir);
-  last_dir = &buf; 
+  if(last_dir!=nullptr){
+    free(last_dir);
+  }
+  
+  last_dir = buf; 
 }
 
 /**
@@ -192,7 +199,7 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
     return new GetCurrDirCommand(cmd_line);
   }
   else if(firstWord.compare("cd") == 0) {
-    return new ChangeDirCommand(cmd_line, this->last_dir);
+    return new ChangeDirCommand(cmd_line);
   }
   else if(firstWord.compare("quit")==0){
     return new QuitCommand(cmd_line, jobs_list);
@@ -215,6 +222,7 @@ void SmallShell::executeCommand(const char *cmd_line) {
   
   Command* cmd = CreateCommand(cmd_line);
   if (cmd != nullptr){
+    // cout << (*(cmd->cmd_vec))[1] << endl ;
     cmd->execute();
     delete cmd;
   }
@@ -285,12 +293,14 @@ void JobsList::printJobsList(){
 
 //----------------------------------- Command Class Methods  -----------------------------------//
 
-Command::Command(const char* cmd_line): cmd_line(cmd_line), pid(getpid()), cmd_vec(nullptr){
-  cmd_vec = _vectorize_cmdline(cmd_line);
-}
+Command::Command(const char* cmd_line): cmd_line(cmd_line), pid(getpid()), cmd_vec(_vectorize_cmdline(cmd_line)){}
+
 Command::~Command(){
-  delete this->cmd_vec;
+  if (this->cmd_vec != nullptr){
+    delete this->cmd_vec;
+  }
 }
+
 BuiltInCommand::BuiltInCommand(const char* cmd_line): Command(cmd_line){}
 /*
 What we know:
@@ -317,7 +327,7 @@ void ChangePromptCommand::execute(){
   if(this->cmd_vec==nullptr){
     return; //error handling
   }
-  int num_args = cmd_vec->size();
+  int num_args = cmd_vec->size() - 1;
   SmallShell& smash = SmallShell::getInstance();
   // printf(*args_parsed);
   if (num_args >= 1){
@@ -345,17 +355,21 @@ GetCurrDirCommand::GetCurrDirCommand(const char* cmd_line): BuiltInCommand(cmd_l
 
 void GetCurrDirCommand::execute(){
     char* buf = (char*) malloc(PATH_MAX * sizeof(char));    //TODO: Change to MAX_PATH(?)
+    if(buf == NULL){
+      return; //error handling
+    }
     if(getCurrDir(buf) != 0){
       cout << "smash error: getcwd failed" << endl;
+      free(buf);
+      return;
     }
     cout << buf << endl;
     free(buf);
 }
 
 //cd
-ChangeDirCommand::ChangeDirCommand(const char* cmd_line, char** plastPwd): BuiltInCommand(cmd_line),
-                                                                            cmd_lastdir(plastPwd) {} //! Maybe better to allocate? I dont want memory leak
-
+ChangeDirCommand::ChangeDirCommand(const char* cmd_line): BuiltInCommand(cmd_line){}
+                                                                           
 void ChangeDirCommand::execute(){
     // char** args_parsed = (char**) malloc((COMMAND_MAX_ARGS+1)* COMMAND_ARGS_MAX_LENGTH);   //FIXME: 1. Currently takes name of command as first argument  
     // if (args_parsed == nullptr){  //TODO: error handling
@@ -366,7 +380,7 @@ void ChangeDirCommand::execute(){
     if(this->cmd_vec==nullptr){
       return; //error handling
     }
-    int num_args = cmd_vec->size();
+    int num_args = cmd_vec->size() - 1;
 
     if (num_args == 0){
       // free(args_parsed);
@@ -380,13 +394,14 @@ void ChangeDirCommand::execute(){
       return;
     }
     const char* path = (*cmd_vec)[1].c_str();
+
     char* buf = (char*) malloc(PATH_MAX * sizeof(char));
     if (buf == nullptr){  //TODO: error handling
     return; //TODO: Maybe assert?
     } 
 
     if (strcmp(path, "-") == 0){
-      if(cmd_lastdir == nullptr){
+      if(smash.last_dir == nullptr){
         cout << "smash error: cd: OLDPWD not set" << endl;
         return;
       }
@@ -409,9 +424,9 @@ void ChangeDirCommand::execute(){
       }
     }
     if(smash.last_dir != nullptr){
-      free(*smash.last_dir);   ///less dangerous?
+      free(smash.last_dir);   ///less dangerous?
     }
-    smash.last_dir = &buf;
+    smash.last_dir = buf;
     
     // free(args_parsed);
     
@@ -432,7 +447,7 @@ void FgCommand::execute(){
     if(this->cmd_vec==nullptr){
       return; //error handling
     }
-    int num_args = cmd_vec->size();
+    int num_args = cmd_vec->size() - 1;
 
     if ((num_args == 0) || (num_args > 1)){
       // free(args_parsed);

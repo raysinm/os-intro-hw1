@@ -15,8 +15,8 @@ class Command {
  public:  // Data
   const char* cmd_line;
   const pid_t pid;
-  string cmd_name;
-  vector<string>* cmd_vec;
+  // std::string cmd_name;
+  std::vector<std::string>* cmd_vec;
  public:  // Methods
   Command(const char* cmd_line);
   virtual ~Command();
@@ -59,10 +59,8 @@ class RedirectionCommand : public Command {
 };
 
 class ChangeDirCommand : public BuiltInCommand {
-public: 
-  char** cmd_lastdir;
 public:
-  ChangeDirCommand(const char* cmd_line, char** plastPwd);
+  ChangeDirCommand(const char* cmd_line);
   virtual ~ChangeDirCommand() {}
   void execute() override;
 };
@@ -119,10 +117,10 @@ class JobsList {
     pid_t pid;
     const time_t init_time;
     bool is_stopped;
-    string cmd_name; 
+    std::string cmd_name; 
   public:
     JobEntry() = delete;
-    JobEntry(const int& job_id, pid_t& pid, const time_t& init_time, bool& is_stopped, string& name) : job_id(job_id), 
+    JobEntry(const int& job_id, pid_t& pid, const time_t& init_time, bool& is_stopped, std::string& name) : job_id(job_id), 
                                       pid(pid),
                                       init_time(init_time),
                                       is_stopped(is_stopped),
@@ -228,7 +226,7 @@ class SmallShell {
  public:  // Data memebers
   std::string prompt;
   pid_t pid;
-  char** last_dir;
+  char* last_dir;
   JobsList* jobs_list;
 
 public:   // Methods
