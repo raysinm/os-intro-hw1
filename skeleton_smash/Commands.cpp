@@ -486,17 +486,24 @@ void FgCommand::execute(){
 
     SmallShell& smash = SmallShell::getInstance();
     int job_id = std::stoi((*cmd_vec)[1]);
-    if(smash.jobs_list->getJobById(job_id) == nullptr){
-      cout << "smash error: fg: job-id " << job_id << " does not exist" << endl;
-    }
-    
-  
-    JobsList::JobEntry *job = smash.jobs_list->getLastJob(&job_id);
-    if (job == nullptr){
-      cout << "smash error: fg: jobs list is empty" << endl;
-    }
+    JobsList::JobEntry *job;
 
+    if(num_args == 0){
+      job = smash.jobs_list->getLastJob(&job_id);
+      if (job == nullptr){
+        cout << "smash error: fg: jobs list is empty" << endl;
+        return;
+      }
+    }
+    else{
+      job = smash.jobs_list->getJobById(job_id);
+      if(job == nullptr){
+        cout << "smash error: fg: job-id " << job_id << " does not exist" << endl;
+        return;
+      }
+    }
     
+    //TODO: bring job to foreground - no errors if got here
   
 }
 
@@ -518,9 +525,34 @@ void BgCommand::execute(){
 
     SmallShell& smash = SmallShell::getInstance();
     int job_id = std::stoi((*cmd_vec)[1]);
-    if(smash.jobs_list->getJobById(job_id) == nullptr){
-      cout << "smash error: bg: job-id " << job_id << " does not exist" << endl;
+    JobsList::JobEntry *job;
+
+    if(num_args == 0){
+      job = smash.jobs_list->getLastStoppedJob(&job_id);
+      if (job == nullptr){
+        cout << "smash error: bg: there is no stopped jobs to resume" << endl;
+        return;
+      }
     }
+    else{
+      job = smash.jobs_list->getJobById(job_id);
+      if(job == nullptr){
+        cout << "smash error: bg: job-id " << job_id << " does not exist" << endl;
+        return;
+      }
+      if(!job->isStopped()){
+        cout << "smash error: bg: job-id " << job_id << " is already running in the background" << endl;
+      }
+    }
+
+    cout << job->getCmdName() << ":" << job->getJobPid() << endl;
+
+    if (kill(job->getJobPid(), SIGCONT) == -1) {
+        perror("smash error: kill failed");
+        return;
+    }
+
+    //job->is_stopped = false; - inaccesible
   
 }
 
