@@ -143,6 +143,7 @@ class JobsList {
     bool isStopped(){ return this->is_stopped;}
     bool isFinished(){ return this->is_finished;}
     void markFinished(){ this->is_finished = true;}
+    void continueJob(){ this->is_stopped = false;}
     std::string& getCmdName(){ return this->cmd_name;}
   };
  // TODO: Add your data members

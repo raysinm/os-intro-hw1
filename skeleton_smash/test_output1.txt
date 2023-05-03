@@ -1,5 +1,7 @@
-smash> hello> smash> /home/mayar/Technion/os-intro-hw1/skeleton_smash
-smash> smash> /home/mayar/Technion/os-intro-hw1/skeleton_smash/tryDir
-smash> smash> /home/mayar/Technion/os-intro-hw1/skeleton_smash
-smash> smash pid is 138234
-smash> jobs print oksmash> 
+smash> hello> smash> /home/stav/os1/os-intro-hw1/skeleton_smash
+smash> smash error: chdir failed
+smash> /home/stav/os1/os-intro-hw1/skeleton_smash
+smash> smash error: cd: OLDPWD not set
+smash> /home/stav/os1/os-intro-hw1/skeleton_smash
+smash> smash pid is 857
+smash> smash> 

@@ -567,8 +567,21 @@ void FgCommand::execute(){
       }
     }
     
-    //TODO: bring job to foreground - no errors if got here
-  
+    cout << job->getCmdName() << ":" << job->getJobPid() << endl;
+
+    if(job->isStopped()){
+      if (kill(job->getJobPid(), SIGCONT) == -1) {
+        perror("smash error: kill failed");
+        return;
+      }
+    }
+
+    int status;
+    smash.jobs_list->removeJobById(job_id);
+    if (waitpid(job->getJobPid(), &status, WUNTRACED) == -1) {
+      perror("smash error: waitpid failed");
+      return;
+    }
 }
 
 
@@ -616,7 +629,7 @@ void BgCommand::execute(){
         return;
     }
 
-    //job->is_stopped = false; - inaccesible
+    job->continueJob();
   
 }
 
