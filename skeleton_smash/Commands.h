@@ -115,15 +115,18 @@ class JobsList {
   class JobEntry {
     int job_id;
     pid_t pid;
-    const time_t init_time;
+    time_t init_time;
     bool is_stopped;
+    bool is_finished;
     std::string cmd_name; 
   public:
-    JobEntry() = delete;
+    // JobEntry() = delete;
+    JobEntry() = default;
     JobEntry(const int& job_id, pid_t& pid, const time_t& init_time, bool& is_stopped, std::string& name) : job_id(job_id), 
                                       pid(pid),
                                       init_time(init_time),
                                       is_stopped(is_stopped),
+                                      is_finished(false),
                                       cmd_name(name){}
     ~JobEntry() = default;
     const int& getJobId(){ return this->job_id;}
@@ -138,6 +141,8 @@ class JobsList {
       return (int(curr_time - init_time)); 
     }
     bool isStopped(){ return this->is_stopped;}
+    bool isFinished(){ return this->is_finished;}
+    void markFinished(){ this->is_finished = true;}
     std::string& getCmdName(){ return this->cmd_name;}
   };
  // TODO: Add your data members
@@ -151,8 +156,8 @@ class JobsList {
   void removeFinishedJobs();
   JobEntry * getJobById(int jobId);
   void removeJobById(int jobId);
-  JobEntry * getLastJob(int* lastJobId);
-  JobEntry *getLastStoppedJob(int *jobId);
+  JobEntry * getLastJob();
+  JobEntry *getLastStoppedJob();
   // TODO: Add extra methods or modify exisitng ones as needed
 };
 

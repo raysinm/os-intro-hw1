@@ -1,5 +1,5 @@
-smash> hello> hello> smash> /home/mayar/Technion/os-intro-hw1/skeleton_smash
+smash> hello> smash> /home/mayar/Technion/os-intro-hw1/skeleton_smash
 smash> smash> /home/mayar/Technion/os-intro-hw1/skeleton_smash/tryDir
 smash> smash> /home/mayar/Technion/os-intro-hw1/skeleton_smash
-smash> smash pid is 95917
-smash> 
+smash> smash pid is 134437
+smash> smash> smash> 

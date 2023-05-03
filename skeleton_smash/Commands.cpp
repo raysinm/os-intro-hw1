@@ -291,7 +291,7 @@ void JobsList::addJob(Command* cmd, bool isStopped){
 
 void JobsList::printJobsList(){
 
-  for(auto job : jobs_list){
+  for(auto& job : jobs_list){
     cout << "[" << job.getJobId() << "] ";
     cout << job.getCmdName() << " : ";
     cout << job.getJobPid() << " ";
@@ -312,10 +312,63 @@ JobsList::JobEntry * JobsList::getJobById(int jobId){
   if (it != jobs_list.end()) {
     return &(*it);
   } else {
-    
     return nullptr;
   }
 }
+
+JobsList::JobEntry* JobsList::getLastJob(){  //Used to be getLastJob(int* lastJobId) but don't need the int
+  // Returns job with max id or nullptr if job_list is empty
+  if (jobs_list.size() == 0){
+    return nullptr;
+  }
+  return &(jobs_list.back());
+}
+
+JobsList::JobEntry* JobsList::getLastStoppedJob(){
+  // Return job with max id which is also stopped, or nullptr if list empty/no stopped jobs
+  if (jobs_list.size() == 0){
+    return nullptr;
+  }
+  int max_jobid = 0 ;
+  JobEntry* ret = nullptr;
+  for(auto& job : jobs_list){
+    if (job.isStopped() && job.getJobId()>max_jobid){
+      max_jobid = job.getJobId();
+      ret = &job;
+    }
+  }
+  return ret;
+}
+
+void JobsList::removeJobById(int jobId){
+  for (auto it=jobs_list.begin(); it != jobs_list.end(); it++){
+    if (it->getJobId() == jobId){
+      //Found the job
+      jobs_list.erase(it);  //shifts rest of items to fill gap
+      return;
+    }
+  }
+  return;
+}
+
+void JobsList::killAllJobs(){
+  // Sends a SIGKILL to all jobs in the list and updates their 'is_finished'
+  for (auto& job : jobs_list){
+    kill(job.getJobPid(), SIGKILL);
+    job.markFinished();
+  }
+}
+
+void JobsList::removeFinishedJobs(){
+  // Removes form list jobs that are finished
+  for (auto it=jobs_list.begin(); it != jobs_list.end(); it++){
+    if (it->isFinished()){
+      jobs_list.erase(it);
+    }
+  }
+  return;
+}
+
 //----------------------------------------------------------------------------------------------//
 
 
@@ -489,7 +542,7 @@ void FgCommand::execute(){
     JobsList::JobEntry *job;
 
     if(num_args == 0){
-      job = smash.jobs_list->getLastJob(&job_id);
+      job = smash.jobs_list->getLastJob();
       if (job == nullptr){
         cout << "smash error: fg: jobs list is empty" << endl;
         return;
@@ -528,7 +581,7 @@ void BgCommand::execute(){
     JobsList::JobEntry *job;
 
     if(num_args == 0){
-      job = smash.jobs_list->getLastStoppedJob(&job_id);
+      job = smash.jobs_list->getLastStoppedJob();
       if (job == nullptr){
         cout << "smash error: bg: there is no stopped jobs to resume" << endl;
         return;
@@ -592,18 +645,18 @@ void KillCommand::execute(){
     cout << "smash error: kill: invalid arguments" << endl;
     return; //error handling
   }
-  auto* jobs_list = &(jobs -> jobs_list);
+  
   auto job = jobs->getJobById(std::stoi(job_id));
   if (job == nullptr){
     // job not found
     std::cout << "smash error: kill: job-id " << job_id << " does not exist" << std::endl;
   }
   else{
-    sig = std::stoi(sig[1:])
-    // if (kill(it->getJobPid(), sig) != 0){
-    //   cout << "TODO : Handle with perror" << endl;
-    // }
-    cout << "signal number " <<  << " was sent to pid " << job->getJobPid()"
+    int sig_num = std::stoi(sig.substr(1));
+    if (kill(job->getJobPid(), sig_num) != 0){
+      cout << "TODO : Handle with perror" << endl;
+    }
+    cout << "signal number " << sig_num << " was sent to pid " << job->getJobPid() << endl;
   }
   
 }
