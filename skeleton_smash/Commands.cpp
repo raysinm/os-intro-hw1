@@ -138,10 +138,11 @@ bool isAllDigits(string& s){
 //----------------------------------- SmallShell Class Methods  -----------------------------------//
 SmallShell::SmallShell() :  prompt("smash"),
                             pid(getppid()),
-                            last_dir(nullptr){
+                            last_dir(nullptr),
+                            jobs_list(new JobsList()){
 // TODO: add your implementation
 //   this->prompt = "smash";
-    
+
 }
 
 SmallShell::~SmallShell() {
@@ -149,6 +150,8 @@ SmallShell::~SmallShell() {
     if (last_dir != nullptr){
         free(last_dir);
     }
+
+    delete[] jobs_list;
 }
 
 void SmallShell::setLastDir(){
@@ -260,7 +263,9 @@ void SmallShell::set_prompt(const std::string& new_prompt){
 //----------------------------------- JobsList Class Methods  -----------------------------------//
 
 
-JobsList::JobsList() : jobs_list(){}
+JobsList::JobsList(): jobs_list(){}
+
+JobsList::~JobsList(){}
 
 void JobsList::addJob(Command* cmd, bool isStopped){
   int job_id = 0;
@@ -290,8 +295,13 @@ void JobsList::addJob(Command* cmd, bool isStopped){
 }
 
 void JobsList::printJobsList(){
-
+  // bool wtf = jobs_list
+  // cout << wtf;
+  if (jobs_list.size() == 0){
+    return; //empty list
+  }
   for(auto& job : jobs_list){
+    // cout << job;
     cout << "[" << job.getJobId() << "] ";
     cout << job.getCmdName() << " : ";
     cout << job.getJobPid() << " ";
@@ -300,6 +310,7 @@ void JobsList::printJobsList(){
       cout << "(stopped)";
     }
     cout << endl;
+
   }
 }
 JobsList::JobEntry * JobsList::getJobById(int jobId){
@@ -616,6 +627,7 @@ void JobsCommand::execute(){
   if (jobs != nullptr){
     jobs->printJobsList();
   }
+  // cout << "jobs print ok";
 }
 
 //quit
