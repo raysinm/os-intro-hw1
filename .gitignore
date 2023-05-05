@@ -58,3 +58,5 @@ smash
 # Other things
 ref/
 original_files/
+local/
+skeleton_build/
