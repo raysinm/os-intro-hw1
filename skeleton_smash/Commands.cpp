@@ -90,6 +90,7 @@ vector<string>* _vectorize_cmdline(const char* cmd_line){
     cmd_vec->push_back(args_parsed[i]);
   }
   free(args_parsed);
+  cout << "Vectorize ok "; 
   return cmd_vec; 
 
 } 
@@ -151,7 +152,7 @@ SmallShell::~SmallShell() {
         free(last_dir);
     }
 
-    delete[] jobs_list;
+    delete jobs_list;
 }
 
 void SmallShell::setLastDir(){
@@ -204,7 +205,13 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
   std::string cmd_s = _trim(string(cmd_line));  // cmd_s is a string that includes whitespace within
   string firstWord = cmd_s.substr(0, cmd_s.find_first_of(" \n"));
   
-  if (firstWord.compare("chprompt") == 0) {
+  if (strstr(cmd_line, ">") || strstr(cmd_line, ">>")) {
+    return new RedirectionCommand(cmd_line);
+  }
+  else if (strstr(cmd_line, "|") || strstr(cmd_line, "|&")) {
+    return new PipeCommand(cmd_line);
+  }
+  else if (firstWord.compare("chprompt") == 0) {
     return new ChangePromptCommand(cmd_line);
   }
   else if(firstWord.compare("showpid") == 0) {
@@ -228,6 +235,9 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
   else if(firstWord.compare("jobs")==0){
     return new JobsCommand(cmd_line, jobs_list);
   }
+  else{
+    return new ExternalCommand(cmd_line);
+  }
   return nullptr;
 }
 
@@ -237,10 +247,11 @@ void SmallShell::executeCommand(const char *cmd_line) {
   // Command* cmd = CreateCommand(cmd_line);
   // cmd->execute();
   // Please note that you must fork smash process for some commands (e.g., external commands....)
-  
+  // cout << "Before CreateCommand " << cmd_line;
   Command* cmd = CreateCommand(cmd_line);
   if (cmd != nullptr){
-    // cout << (*(cmd->cmd_vec))[1] << endl ;
+    // cout << (*(cmd->cmd_vec))[0] << endl ;
+    cout << "Cmd pid " << cmd->pid;
     cmd->execute();
     delete cmd;
   }
@@ -287,11 +298,11 @@ void JobsList::addJob(Command* cmd, bool isStopped){
 
   pid_t pid = cmd->pid; 
   time_t time;
-  string cmd_name = (*(cmd->cmd_vec))[0]; //might be prone to bugs
+  // string cmd_name = (*(cmd->cmd_vec))[0]; //might be prone to bugs
   if (std::time(&time) < 0){
     return; //TODO: error handling. also, should we do this time thing here or outside?
   }
-  jobs_list.push_back(JobEntry(job_id=(max_job_id+1), pid=pid, time, isStopped, cmd_name));
+  jobs_list.push_back(JobEntry(job_id=(max_job_id+1), pid=pid, time, isStopped, (cmd->cmd_vec)));
 }
 
 void JobsList::printJobsList(){
@@ -365,6 +376,11 @@ void JobsList::removeJobById(int jobId){
 void JobsList::killAllJobs(){
   // Sends a SIGKILL to all jobs in the list and updates their 'is_finished'
   for (auto& job : jobs_list){
+    string cmd_line = "";
+    for (auto str : job.getCmdVec()){
+      cmd_line += str;
+    }
+    cout << job.getJobPid() << cmd_line;
     kill(job.getJobPid(), SIGKILL);
     job.markFinished();
   }
@@ -386,7 +402,11 @@ void JobsList::removeFinishedJobs(){
 
 //----------------------------------- Command Class Methods  -----------------------------------//
 
-Command::Command(const char* cmd_line): cmd_line(cmd_line), pid(getpid()), cmd_vec(_vectorize_cmdline(cmd_line)){}
+Command::Command(const char* cmd_line): cmd_line(cmd_line), pid(getpid()), cmd_vec(_vectorize_cmdline(cmd_line)){
+  // cout << "In Command ";
+  // cout << this;
+  // cout << this->cmd_vec;
+}
 
 Command::~Command(){
   if (this->cmd_vec != nullptr){
@@ -394,7 +414,12 @@ Command::~Command(){
   }
 }
 
-BuiltInCommand::BuiltInCommand(const char* cmd_line): Command(cmd_line){}
+//----------------------------------- BuiltInCommand Class Methods  -----------------------------------//
+
+BuiltInCommand::BuiltInCommand(const char* cmd_line): Command(cmd_line){
+  // cout << "In BuiltInCommand ";
+  // cout << this;
+}
 /*
 What we know:
 1. Each command gets cmd_line as is
@@ -634,22 +659,34 @@ void BgCommand::execute(){
 }
 
 //jobs
-JobsCommand::JobsCommand(const char* cmd_line, JobsList* jobs): BuiltInCommand(cmd_line), jobs(jobs){}
+JobsCommand::JobsCommand(const char* cmd_line, JobsList* jobs): BuiltInCommand(cmd_line){
+  this->jobs = jobs; 
+}
 
 void JobsCommand::execute(){
   if (jobs != nullptr){
     jobs->printJobsList();
   }
-  // cout << "jobs print ok";
+  // cout << "jobs print ok ";
 }
 
 //quit
-QuitCommand::QuitCommand(const char* cmd_line, JobsList* jobs) : BuiltInCommand(cmd_line), jobs(jobs){}
+QuitCommand::QuitCommand(const char* cmd_line, JobsList* jobs) : BuiltInCommand(cmd_line), jobs(jobs){
+  cout << this;
+}
+
 
 void QuitCommand::execute(){
-  for(auto job : jobs->jobs_list){
-    kill(job.getJobPid(), SIGKILL);
+  cout << "Got to quit execute ";
+  if ((*cmd_vec)[1] == "kill"){
+    cout << "sending SIGKILL signal to " << jobs->jobs_list.size() << "jobs" << endl;
+    jobs->killAllJobs();
   }
+  for(auto job : jobs->jobs_list){
+      cout << "Job #" << job.getJobId() << endl;
+      kill(job.getJobPid(), SIGKILL);
+  }
+  
   exit(0);
   return;
 }
@@ -684,6 +721,54 @@ void KillCommand::execute(){
     cout << "signal number " << sig_num << " was sent to pid " << job->getJobPid() << endl;
   }
   
+}
+
+//----------------------------------- ExternalCommand Class Methods  -----------------------------------//
+
+ExternalCommand::ExternalCommand(const char* cmd_line): Command(cmd_line){}
+
+void ExternalCommand::execute(){
+  SmallShell& smash = SmallShell::getInstance();
+  pid_t pid = fork();
+    this->pid = pid;
+    if(pid == 0) // son procces
+    {
+      if (setpgrp() == -1) {
+        perror("smash error: setpgrp failed");
+        return;
+      }
+      string trimmed_cmd_line = _trim(string(cmd_line));
+      char cmd_line_array[COMMAND_ARGS_MAX_LENGTH];
+      strcpy(cmd_line_array, trimmed_cmd_line.c_str());
+      if(strstr(cmd_line, "*") || strstr(cmd_line, "?")) // complex external command run using bash
+      {
+        char bash_path[] = "/bin/bash";
+        char flag[] = "-c";
+        char *args_bash[] = {bash_path, flag, cmd_line_array, nullptr};
+
+        if (execv(bash_path, args_bash) == -1) {
+            perror("smash error: execv failed");
+            return;
+        }
+
+      }
+      else  //simple external command run using execv syscalls
+      {
+        char *args[] = {cmd_line_array, nullptr};
+
+        }
+
+      }
+    }
+    else // father procces
+    {
+      if(_isBackgroundComamnd(cmd_line)){
+
+      }
+      else{
+
+      }
+    }
 }
 
 //----------------------------------------------------------------------------------------------//

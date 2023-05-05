@@ -20,8 +20,18 @@ int main(int argc, char* argv[]) {
     while(true) {
         std::cout << smash.get_prompt() << "> ";
         std::string cmd_line;
-        std::getline(std::cin, cmd_line);
-        smash.executeCommand(cmd_line.c_str());
+        std::cout << "BEFORE getline ";
+        // std::cout << std::cin.good();
+        // std::getline(std::cin, cmd_line);
+        // std::cout << "AFTER getline ";
+        // smash.executeCommand(cmd_line.c_str());
+
+        if (std::getline(std::cin, cmd_line)) {
+            std::cout << "AFTER getline ";
+            smash.executeCommand(cmd_line.c_str());
+        } else {
+            std::cout << "Failed to read from input stream." << std::endl;
+        }
     }
     return 0;
 }

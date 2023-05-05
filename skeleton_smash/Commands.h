@@ -13,12 +13,12 @@ enum class DirErrors{
 class Command {
  protected:
  public:  // Data
-  const char* cmd_line;
-  const pid_t pid;
+  char* cmd_line;
+  pid_t pid;
   // std::string cmd_name;
-  std::vector<std::string>* cmd_vec;
+  std::vector<std::string> cmd_vec;
  public:  // Methods
-  Command(const char* cmd_line);
+  Command(const char* orig_cmd_line);
   virtual ~Command();
   virtual void execute() = 0;
   //virtual void prepare();
@@ -105,7 +105,9 @@ class QuitCommand : public BuiltInCommand {
   JobsList* jobs;
 public:
   QuitCommand(const char* cmd_line, JobsList* jobs);
-  virtual ~QuitCommand() {}
+  virtual ~QuitCommand() {
+    return;
+  }
   void execute() override;
 };
 
@@ -118,16 +120,20 @@ class JobsList {
     time_t init_time;
     bool is_stopped;
     bool is_finished;
-    std::string cmd_name; 
+    std::vector<std::string> cmd_vec; 
   public:
     // JobEntry() = delete;
     JobEntry() = default;
-    JobEntry(const int& job_id, pid_t& pid, const time_t& init_time, bool& is_stopped, std::string& name) : job_id(job_id), 
+    JobEntry(const int& job_id, pid_t& pid, const time_t& init_time, bool& is_stopped, std::vector<std::string>& orig_cmd_vec) : job_id(job_id), 
                                       pid(pid),
                                       init_time(init_time),
                                       is_stopped(is_stopped),
                                       is_finished(false),
-                                      cmd_name(name){}
+                                      cmd_vec(orig_cmd_vec){
+                                        // for (auto str : *orig_cmd_vec){
+                                        //   cmd_vec.push_back(str); 
+                                        // }
+                                      }
     ~JobEntry() = default;
     const int& getJobId(){ return this->job_id;}
     
@@ -135,7 +141,7 @@ class JobsList {
     
     const int& getTimeElapsed(){
       time_t curr_time;
-      if (std::time(&curr_time) < 0){
+      if (time(&curr_time) < 0){
         return -1;  //error handling
       }
       return (int(curr_time - init_time)); 
@@ -144,12 +150,14 @@ class JobsList {
     bool isFinished(){ return this->is_finished;}
     void markFinished(){ this->is_finished = true;}
     void continueJob(){ this->is_stopped = false;}
-    std::string& getCmdName(){ return this->cmd_name;}
+    std::vector<std::string>& getCmdVec(){ return this->cmd_vec;}
+    std::string& getCmdName(){ return this->cmd_vec[0];}
+  
   };
  // TODO: Add your data members
  public:
   std::vector<JobEntry> jobs_list;
-  JobsList();
+  JobsList() = default;
   ~JobsList();
   void addJob(Command* cmd, bool isStopped = false);
   void printJobsList();
