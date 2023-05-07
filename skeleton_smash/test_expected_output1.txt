@@ -1,3 +1,1 @@
-smash> hello> hello> smash> /home/mayar/Technion/os-intro-hw1/skeleton_smash
-smash> pid is 8198
-smash>
+smash> smash> hello> hello> hello> hello> smash> smash> smash> smash: sending SIGKILL signal to 0 jobs:

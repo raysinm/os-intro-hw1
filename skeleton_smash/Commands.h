@@ -162,7 +162,7 @@ class JobsList {
   ~JobsList();
   void addJob(Command* cmd, bool isStopped = false);
   void printJobsList();
-  void killAllJobs();
+  void killAllJobs(int sig);
   void removeFinishedJobs();
   JobEntry * getJobById(int jobId);
   void removeJobById(int jobId);
