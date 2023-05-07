@@ -755,20 +755,35 @@ void ExternalCommand::execute(){
       else  //simple external command run using execv syscalls
       {
         char *args[] = {cmd_line_array, nullptr};
-
+        if (execv(args[0], args) == -1) {
+            perror("smash error: execv failed");
+            return;
         }
-
       }
     }
     else // father procces
     {
-      if(_isBackgroundComamnd(cmd_line)){
-
+      smash.jobs_list->addJob(this);  //hopefully this is ok cause i pass externalcommand and not command
+      int* status;
+      if(!_isBackgroundComamnd(cmd_line)){
+        if(waitpid(pid, status, WUNTRACED) == -1){
+        perror("smash error: waitpid failed");
       }
-      else{
-
       }
     }
 }
 
 //----------------------------------------------------------------------------------------------//
+
+
+PipeCommand::PipeCommand(const char* cmd_line): Command(cmd_line){}
+
+void PipeCommand::execute(){}
+
+
+//----------------------------------------------------------------------------------------------//
+
+
+RedirectionCommand::RedirectionCommand(const char* cmd_line): Command(cmd_line){}
+
+void RedirectionCommand::execute(){}
