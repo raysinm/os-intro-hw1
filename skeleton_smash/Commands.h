@@ -21,6 +21,7 @@ class Command {
   Command(const char* orig_cmd_line);
   virtual ~Command();
   virtual void execute() = 0;
+  void _vectorize_cmdline(const char* cmd_line);
   //virtual void prepare();
   //virtual void cleanup();
   // TODO: Add your extra methods if needed
@@ -241,7 +242,7 @@ class SmallShell {
  public:  // Data memebers
   std::string prompt;
   pid_t pid;
-  char* last_dir;
+  std::string last_dir;
   JobsList* jobs_list;
 
 public:   // Methods

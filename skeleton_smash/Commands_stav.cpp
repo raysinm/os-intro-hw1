@@ -72,28 +72,26 @@ int _parseCommandLine(const char* cmd_line, char** args) {
   FUNC_EXIT()
 }
 
-vector<string>& _vectorize_cmdline(const char* cmd_line){
-  
+vector<string>* _vectorize_cmdline(const char* cmd_line){
   std::vector<string>* cmd_vec = new std::vector<string>();
-   
+  
   char** args_parsed = (char**) malloc((COMMAND_MAX_ARGS+1)* sizeof(char*));   //FIXME: 1. Currently takes name of command as first argument  
-  // if (args_parsed == nullptr){  //TODO: error handling
-  //   delete cmd_vec;
-  //   return nullptr; //TODO: Maybe assert?
-  // }    
-
+  if (args_parsed == nullptr){  //TODO: error handling
+    delete cmd_vec;
+    return nullptr; //TODO: Maybe assert?
+  }           
   int num_args = _parseCommandLine(cmd_line, args_parsed);
-  // if ((num_args-1)>COMMAND_MAX_ARGS){ //TODO: MAKE THIS CHECK SOMEWHERE ELSE
-  //   delete cmd_vec;
-  //   free(args_parsed);
-  //   return nullptr; //error handling
-  // }
+  if ((num_args-1)>COMMAND_MAX_ARGS){ //TODO: Make sure if command name is an argument
+    delete cmd_vec;
+    free(args_parsed);
+    return nullptr; //error handling
+  }
   for (int i=0; i<num_args; i++){
     cmd_vec->push_back(args_parsed[i]);
   }
   free(args_parsed);
-  // cout << "Vectorize ok "; 
-  return *cmd_vec; 
+  cout << "Vectorize ok "; 
+  return cmd_vec; 
 
 } 
 
@@ -140,27 +138,21 @@ bool isAllDigits(string& s){
 
 //----------------------------------- SmallShell Class Methods  -----------------------------------//
 SmallShell::SmallShell() :  prompt("smash"),
-                            pid(getpid()),
+                            pid(getppid()),
                             last_dir(nullptr),
                             jobs_list(new JobsList()){
-                              if (jobs_list == nullptr){
-                                cout << "Problem in JobsList() ";
-                              }
-                              cout << "In smash ctor ";
-                            }
 // TODO: add your implementation
 //   this->prompt = "smash";
 
-
+}
 
 SmallShell::~SmallShell() {
 // TODO: add your implementation
     if (last_dir != nullptr){
         free(last_dir);
     }
-    if (jobs_list!= nullptr){
-      delete jobs_list;
-    }
+
+    delete jobs_list;
 }
 
 void SmallShell::setLastDir(){
@@ -213,13 +205,13 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
   std::string cmd_s = _trim(string(cmd_line));  // cmd_s is a string that includes whitespace within
   string firstWord = cmd_s.substr(0, cmd_s.find_first_of(" \n"));
   
-  // if (strstr(cmd_line, ">") || strstr(cmd_line, ">>")) {
-  //   return new RedirectionCommand(cmd_line);
-  // }
-  // else if (strstr(cmd_line, "|") || strstr(cmd_line, "|&")) {
-  //   return new PipeCommand(cmd_line);
-  // }
-  if (firstWord.compare("chprompt") == 0) {
+  if (strstr(cmd_line, ">") || strstr(cmd_line, ">>")) {
+    return new RedirectionCommand(cmd_line);
+  }
+  else if (strstr(cmd_line, "|") || strstr(cmd_line, "|&")) {
+    return new PipeCommand(cmd_line);
+  }
+  else if (firstWord.compare("chprompt") == 0) {
     return new ChangePromptCommand(cmd_line);
   }
   else if(firstWord.compare("showpid") == 0) {
@@ -243,9 +235,9 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
   else if(firstWord.compare("jobs")==0){
     return new JobsCommand(cmd_line, jobs_list);
   }
-  // else{
-  //   return new ExternalCommand(cmd_line);
-  // }
+  else{
+    return new ExternalCommand(cmd_line);
+  }
   return nullptr;
 }
 
@@ -259,7 +251,7 @@ void SmallShell::executeCommand(const char *cmd_line) {
   Command* cmd = CreateCommand(cmd_line);
   if (cmd != nullptr){
     // cout << (*(cmd->cmd_vec))[0] << endl ;
-    // cout << "Cmd pid " << cmd->pid;
+    cout << "Cmd pid " << cmd->pid;
     cmd->execute();
     delete cmd;
   }
@@ -282,7 +274,7 @@ void SmallShell::set_prompt(const std::string& new_prompt){
 //----------------------------------- JobsList Class Methods  -----------------------------------//
 
 
-// JobsList::JobsList(): jobs_list(){}
+JobsList::JobsList(): jobs_list(){}
 
 JobsList::~JobsList(){}
 
@@ -334,7 +326,7 @@ void JobsList::printJobsList(){
 }
 JobsList::JobEntry * JobsList::getJobById(int jobId){
 
-  // int target_id = std::stoi(cmd_vec[2]);   ///TODO: check the format (stoi will fail if thereare chars)
+  // int target_id = std::stoi((*cmd_vec)[2]);   ///TODO: check the format (stoi will fail if thereare chars)
   int target_id = jobId;
   auto it = std::find_if(jobs_list.begin(), jobs_list.end(), 
     [&target_id](JobsList::JobEntry& job) { return job.getJobId() == target_id; });
@@ -410,26 +402,19 @@ void JobsList::removeFinishedJobs(){
 
 //----------------------------------- Command Class Methods  -----------------------------------//
 
-// Command::Command(const char* orig_cmd_line): cmd_line(new char[strlen(orig_cmd_line)+1]), pid(getpid()), cmd_vec(_vectorize_cmdline(orig_cmd_line)){
-//   // cout << "In Command ";
-//   // cout << this;
-//   // cout << this->cmd_vec;
-//   strcpy(this->cmd_line, orig_cmd_line);
-// }
-
-Command::Command(const char* orig_cmd_line): cmd_line(new char[strlen(orig_cmd_line)+1]), pid(getpid()){
-  cmd_vec = _vectorize_cmdline(orig_cmd_line);
-  cout << "In Command ";
+Command::Command(const char* cmd_line): cmd_line(cmd_line), pid(getpid()), cmd_vec(_vectorize_cmdline(cmd_line)){
+  // cout << "In Command ";
   // cout << this;
   // cout << this->cmd_vec;
-  strcpy(this->cmd_line, orig_cmd_line);
 }
 
 Command::~Command(){
-  if (this->cmd_line != nullptr){
-    delete this->cmd_line;
+  if (this->cmd_vec != nullptr){
+    delete this->cmd_vec;
   }
 }
+
+//----------------------------------- BuiltInCommand Class Methods  -----------------------------------//
 
 BuiltInCommand::BuiltInCommand(const char* cmd_line): Command(cmd_line){
   // cout << "In BuiltInCommand ";
@@ -456,15 +441,15 @@ void ChangePromptCommand::execute(){
   // if (args_parsed == nullptr){  //TODO: error handling
   //   return; //TODO: Maybe assert?
   // }                                                                                        //2. Whats the right allocation size?
-  // // int num_args = _parseCommandLine(cmd_line, args_parsed) - 1;
-  // if(this->cmd_vec==nullptr){
-  //   return; //error handling
-  // }
-  int num_args = cmd_vec.size() - 1;
+  // int num_args = _parseCommandLine(cmd_line, args_parsed) - 1;
+  if(this->cmd_vec==nullptr){
+    return; //error handling
+  }
+  int num_args = cmd_vec->size() - 1;
   SmallShell& smash = SmallShell::getInstance();
   // printf(*args_parsed);
   if (num_args >= 1){
-    smash.set_prompt(cmd_vec[1]);
+    smash.set_prompt((*cmd_vec)[1]);
   } else{
     smash.set_prompt("smash");
   }
@@ -510,10 +495,10 @@ void ChangeDirCommand::execute(){
     // }                                                                                        //2. Whats the right allocation size?
     // int num_args = _parseCommandLine(this->cmd_line, args_parsed) - 1;
     
-    // if(this->cmd_vec==nullptr){
-    //   return; //error handling
-    // }
-    int num_args = cmd_vec.size() - 1;
+    if(this->cmd_vec==nullptr){
+      return; //error handling
+    }
+    int num_args = cmd_vec->size() - 1;
 
     if (num_args == 0){
       // free(args_parsed);
@@ -526,7 +511,7 @@ void ChangeDirCommand::execute(){
       cout << "smash error: cd: too many arguments" << endl;
       return;
     }
-    const char* path = cmd_vec[1].c_str();
+    const char* path = (*cmd_vec)[1].c_str();
 
     char* buf = (char*) malloc(PATH_MAX * sizeof(char));
     if (buf == nullptr){  //TODO: error handling
@@ -577,19 +562,19 @@ void FgCommand::execute(){
     // }                                                                                        //2. Whats the right allocation size?
     // int num_args = _parseCommandLine(this->cmd_line, args_parsed) - 1;
     
-    // if(this->cmd_vec==nullptr){
-    //   return; //error handling
-    // }
-    int num_args = cmd_vec.size() - 1;
+    if(this->cmd_vec==nullptr){
+      return; //error handling
+    }
+    int num_args = cmd_vec->size() - 1;
 
-    if (num_args > 1 || isAllDigits(cmd_vec[1])){
+    if (num_args > 1 || isAllDigits((*cmd_vec)[1])){
       // free(args_parsed);
       cout << "smash error: fg: invalid arguments" << endl;
       return;
     }
 
     SmallShell& smash = SmallShell::getInstance();
-    int job_id = std::stoi(cmd_vec[1]);
+    int job_id = std::stoi((*cmd_vec)[1]);
     JobsList::JobEntry *job;
 
     if(num_args == 0){
@@ -629,19 +614,19 @@ void FgCommand::execute(){
 BgCommand::BgCommand(const char* cmd_line): BuiltInCommand(cmd_line) {}
 
 void BgCommand::execute(){
-  // if(this->cmd_vec==nullptr){
-  //     return; //error handling
-  //   }
-    int num_args = cmd_vec.size() - 1;
+  if(this->cmd_vec==nullptr){
+      return; //error handling
+    }
+    int num_args = cmd_vec->size() - 1;
 
-    if (num_args > 1 || isAllDigits(cmd_vec[1])){
+    if (num_args > 1 || isAllDigits((*cmd_vec)[1])){
       // free(args_parsed);
       cout << "smash error: bg: invalid arguments" << endl;
       return;
     }
 
     SmallShell& smash = SmallShell::getInstance();
-    int job_id = std::stoi(cmd_vec[1]);
+    int job_id = std::stoi((*cmd_vec)[1]);
     JobsList::JobEntry *job;
 
     if(num_args == 0){
@@ -693,7 +678,7 @@ QuitCommand::QuitCommand(const char* cmd_line, JobsList* jobs) : BuiltInCommand(
 
 void QuitCommand::execute(){
   cout << "Got to quit execute ";
-  if (cmd_vec[1] == "kill"){
+  if ((*cmd_vec)[1] == "kill"){
     cout << "sending SIGKILL signal to " << jobs->jobs_list.size() << "jobs" << endl;
     jobs->killAllJobs();
   }
@@ -711,12 +696,12 @@ KillCommand::KillCommand(const char* cmd_line, JobsList* jobs): BuiltInCommand(c
 
 void KillCommand::execute(){
   
-  // if(cmd_vec == nullptr){
-  //   return; //error handling
-  // }
-  int num_args = cmd_vec.size() - 1;
-  string job_id = cmd_vec[2];
-  string& sig = cmd_vec[1];  //TODO: check format!!
+  if(cmd_vec == nullptr){
+    return; //error handling
+  }
+  int num_args = cmd_vec->size() - 1;
+  string job_id = (*cmd_vec)[2];
+  string& sig = (*cmd_vec)[1];  //TODO: check format!!
   
   if (num_args != 2 || !isAllDigits(job_id) || sig[0]!='-'){
     cout << "smash error: kill: invalid arguments" << endl;
@@ -736,6 +721,54 @@ void KillCommand::execute(){
     cout << "signal number " << sig_num << " was sent to pid " << job->getJobPid() << endl;
   }
   
+}
+
+//----------------------------------- ExternalCommand Class Methods  -----------------------------------//
+
+ExternalCommand::ExternalCommand(const char* cmd_line): Command(cmd_line){}
+
+void ExternalCommand::execute(){
+  SmallShell& smash = SmallShell::getInstance();
+  pid_t pid = fork();
+    this->pid = pid;
+    if(pid == 0) // son procces
+    {
+      if (setpgrp() == -1) {
+        perror("smash error: setpgrp failed");
+        return;
+      }
+      string trimmed_cmd_line = _trim(string(cmd_line));
+      char cmd_line_array[COMMAND_ARGS_MAX_LENGTH];
+      strcpy(cmd_line_array, trimmed_cmd_line.c_str());
+      if(strstr(cmd_line, "*") || strstr(cmd_line, "?")) // complex external command run using bash
+      {
+        char bash_path[] = "/bin/bash";
+        char flag[] = "-c";
+        char *args_bash[] = {bash_path, flag, cmd_line_array, nullptr};
+
+        if (execv(bash_path, args_bash) == -1) {
+            perror("smash error: execv failed");
+            return;
+        }
+
+      }
+      else  //simple external command run using execv syscalls
+      {
+        char *args[] = {cmd_line_array, nullptr};
+
+        }
+
+      }
+    }
+    else // father procces
+    {
+      if(_isBackgroundComamnd(cmd_line)){
+
+      }
+      else{
+
+      }
+    }
 }
 
 //----------------------------------------------------------------------------------------------//
