@@ -12,5 +12,5 @@ fi
 # Run the executable with valgrind for each input file
 for input_file in test_input1*.txt; do
     output_file=$(echo $input_file | sed 's/input/output/g')
-    valgrind ./smash < "$input_file" > "$output_file"
+    valgrind --log-file=./valgrind.log --leak-check=full --show-leak-kinds=all ./smash < "$input_file" > "$output_file"
 done
