@@ -223,13 +223,13 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
   std::string cmd_s = _trim(string(cmd_line));  // cmd_s is a string that includes whitespace within
   string firstWord = cmd_s.substr(0, cmd_s.find_first_of(" \n"));
   
-  // if (strstr(cmd_line, ">") || strstr(cmd_line, ">>")) {
-  //   return new RedirectionCommand(cmd_line);
-  // }
-  // else if (strstr(cmd_line, "|") || strstr(cmd_line, "|&")) {
-  //   return new PipeCommand(cmd_line);
-  // }
-  if (firstWord.compare("chprompt") == 0) {
+  if (strstr(cmd_line, ">") || strstr(cmd_line, ">>")) {
+    return new RedirectionCommand(cmd_line);
+  }
+  else if (strstr(cmd_line, "|") || strstr(cmd_line, "|&")) {
+    return new PipeCommand(cmd_line);
+  }
+  else if (firstWord.compare("chprompt") == 0) {
     return new ChangePromptCommand(cmd_line);
   }
   else if(firstWord.compare("showpid") == 0) {
@@ -253,9 +253,9 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
   else if(firstWord.compare("jobs")==0){
     return new JobsCommand(cmd_line, jobs_list);
   }
-  // else{
-  //   return new ExternalCommand(cmd_line);
-  // }
+  else{
+    return new ExternalCommand(cmd_line);
+  }
   return nullptr;
 }
 
@@ -292,7 +292,7 @@ void SmallShell::set_prompt(const std::string& new_prompt){
 //----------------------------------- JobsList Class Methods  -----------------------------------//
 
 
-// JobsList::JobsList(): jobs_list(){}
+JobsList::JobsList(): jobs_list(){}
 
 JobsList::~JobsList(){}
 
@@ -445,6 +445,8 @@ Command::~Command(){
     delete[] this->cmd_line;
   }
 }
+
+//----------------------------------- BuiltInCommand Class Methods  -----------------------------------//
 
 BuiltInCommand::BuiltInCommand(const char* cmd_line): Command(cmd_line){
   // cout << "In BuiltInCommand ";
@@ -717,7 +719,7 @@ void QuitCommand::execute(){
       cout << "Job #" << job.getJobId() << endl;
       kill(job.getJobPid(), SIGKILL);
   }
-  // atexit(cleanup);
+  // atexit(cleanup); //Maybe we should destroy everything on the way out
   exit(0);
   return;
 }
@@ -755,3 +757,68 @@ void KillCommand::execute(){
 }
 
 //----------------------------------------------------------------------------------------------//
+
+//----------------------------------- ExternalCommand Class Methods  -----------------------------------//
+
+ExternalCommand::ExternalCommand(const char* cmd_line): Command(cmd_line){}
+
+void ExternalCommand::execute(){
+  SmallShell& smash = SmallShell::getInstance();
+  pid_t pid = fork();
+    this->pid = pid;
+    if(pid == 0) // son procces
+    {
+      if (setpgrp() == -1) {
+        perror("smash error: setpgrp failed");
+        return;
+      }
+      string trimmed_cmd_line = _trim(string(cmd_line));
+      char cmd_line_array[COMMAND_ARGS_MAX_LENGTH];
+      strcpy(cmd_line_array, trimmed_cmd_line.c_str());
+      if(strstr(cmd_line, "*") || strstr(cmd_line, "?")) // complex external command run using bash
+      {
+        char bash_path[] = "/bin/bash";
+        char flag[] = "-c";
+        char *args_bash[] = {bash_path, flag, cmd_line_array, nullptr};
+
+        if (execv(bash_path, args_bash) == -1) {
+            perror("smash error: execv failed");
+            return;
+        }
+
+      }
+      else  //simple external command run using execv syscalls
+      {
+        char *args[] = {cmd_line_array, nullptr};
+        if (execv(args[0], args) == -1) {
+            perror("smash error: execv failed");
+            return;
+        }
+      }
+    }
+    else // father procces
+    {
+      smash.jobs_list->addJob(this);  //hopefully this is ok cause i pass externalcommand and not command
+      int* status;
+      if(!_isBackgroundComamnd(cmd_line)){
+        if(waitpid(pid, status, WUNTRACED) == -1){
+        perror("smash error: waitpid failed");
+      }
+      }
+    }
+}
+
+//----------------------------------------------------------------------------------------------//
+
+
+PipeCommand::PipeCommand(const char* cmd_line): Command(cmd_line){}
+
+void PipeCommand::execute(){}
+
+
+//----------------------------------------------------------------------------------------------//
+
+
+RedirectionCommand::RedirectionCommand(const char* cmd_line): Command(cmd_line){}
+
+void RedirectionCommand::execute(){}
