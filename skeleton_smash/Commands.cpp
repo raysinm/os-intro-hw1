@@ -412,7 +412,7 @@ ShowPidCommand::ShowPidCommand(const char* cmd_line): BuiltInCommand(cmd_line){}
 
 void ShowPidCommand::execute(){
     SmallShell& smash = SmallShell::getInstance();
-    // cout << "smash pid is " << smash.pid << endl;
+    cout << "smash pid is " << smash.pid << endl;
     return;
 }
 
@@ -652,24 +652,38 @@ ExternalCommand::ExternalCommand(const char* cmd_line): Command(cmd_line){}
 
 void ExternalCommand::execute(){
   SmallShell& smash = SmallShell::getInstance();
-  pid_t pid = fork();
-    this->pid = pid;
+  pid_t pid = fork(); // danger: error handling ?
+    this->pid = pid;  
     if(pid == 0) // son procces
     {
       if (setpgrp() == -1) {
         perror("smash error: setpgrp failed");
         return;
       }
-      string trimmed_cmd_line = _trim(string(cmd_line));
-      char cmd_line_array[COMMAND_ARGS_MAX_LENGTH];
-      strcpy(cmd_line_array, trimmed_cmd_line.c_str());
+      // string trimmed_cmd_line = _trim(string(cmd_line));  //! danger: Doesnt trim inside spaces
+      // char cmd_line_array[COMMAND_ARGS_MAX_LENGTH]; //It's not an array, its a char*
+      // strcpy(cmd_line_array, trimmed_cmd_line.c_str()); 
+      
+      // char argv[COMMAND_ARGS_MAX_LENGTH*COMMAND_MAX_ARGS];
+      string cmd_string = "";
+      char* cmd_name = const_cast<char*>(cmd_vec[0].c_str()); // Danger: error handling (e.g empty vec)
+      for (size_t i=0; i<cmd_vec.size(); i++){
+        cmd_string += cmd_vec[i];
+        cmd_string += " ";
+      }
+      cmd_string += "\0";
+      char* cmd_string_char = const_cast<char*>(cmd_string.c_str());  // Danger: conversion- string to const char* to char*
+
+      args[0] = const_cast<char*>(cmd_vec[0].c_str());  // First arg - name of executable
+      args[1] = const_cast<char*>(cmd_string.c_str());  // Second arg - 
+
       if(strstr(cmd_line, "*") || strstr(cmd_line, "?")) // complex external command run using bash
       {
-        char bash_path[] = "/bin/bash";
+        // char bash_path[] = "/bin/bash";
         char flag[] = "-c";
-        char *args_bash[] = {bash_path, flag, cmd_line_array, nullptr};
+        char *args_bash[] = {"/bin/bash", "-c", cmd_string_char, NULL};
 
-        if (execv(bash_path, args_bash) == -1) {
+        if (execv(args_bash[0], args_bash) == -1) {  
             perror("smash error: execv failed");
             return;
         }
@@ -677,7 +691,7 @@ void ExternalCommand::execute(){
       }
       else  //simple external command run using execv syscalls
       {
-        char *args[] = {cmd_line_array, nullptr};
+        char *args[] = {cmd_name, cmd_string_char ,NULL}; 
         if (execv(args[0], args) == -1) {
             perror("smash error: execv failed");
             return;
@@ -687,9 +701,9 @@ void ExternalCommand::execute(){
     else // father procces
     {
       smash.jobs_list->addJob(this);  //hopefully this is ok cause i pass externalcommand and not command - MAYA: its ok, they inherit from Command
-      int* status;
+      int status;
       if(!_isBackgroundComamnd(cmd_line)){
-        if(waitpid(pid, status, WUNTRACED) == -1){
+        if(waitpid(pid, &status, WUNTRACED) == -1){
         perror("smash error: waitpid failed");
       }
       }

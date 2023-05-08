@@ -35,6 +35,7 @@ class BuiltInCommand : public Command {
 };
 
 class ExternalCommand : public Command {
+  char* args[COMMAND_MAX_ARGS+2];
  public:
   ExternalCommand(const char* cmd_line);
   virtual ~ExternalCommand() {}
