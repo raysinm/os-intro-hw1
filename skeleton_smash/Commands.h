@@ -122,20 +122,20 @@ class JobsList {
     pid_t pid;
     time_t init_time;
     bool is_stopped;
+    bool is_background;
     bool is_finished;
     std::vector<std::string> cmd_vec; 
   public:
     // JobEntry() = delete;
-    JobEntry() = default;
-    JobEntry(const int& job_id, pid_t& pid, const time_t& init_time, bool& is_stopped, std::vector<std::string>& orig_cmd_vec) : job_id(job_id), 
-                                      pid(pid),
+    JobEntry() = delete;
+    JobEntry(const int& job_id, const time_t& init_time, bool& is_stopped, Command* cmd) : job_id(job_id), 
+                                      pid(cmd->pid),
                                       init_time(init_time),
                                       is_stopped(is_stopped),
+                                      is_background(cmd->is_bg),
                                       is_finished(false),
-                                      cmd_vec(orig_cmd_vec){
-                                        // for (auto str : *orig_cmd_vec){
-                                        //   cmd_vec.push_back(str); 
-                                        // }
+                                      cmd_vec(cmd->cmd_vec){
+                                        
                                       }
     ~JobEntry() = default;
     const int& getJobId(){ return this->job_id;}
@@ -150,6 +150,7 @@ class JobsList {
       return (int(curr_time - init_time)); 
     }
     bool isStopped(){ return this->is_stopped;}
+    bool isBackground(){ return this->is_background;}
     bool isFinished(){ return this->is_finished;}
     void markFinished(){ this->is_finished = true;}
     void continueJob(){ this->is_stopped = false;}

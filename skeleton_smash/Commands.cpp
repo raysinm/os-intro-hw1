@@ -251,28 +251,33 @@ void JobsList::addJob(Command* cmd, bool isStopped){
   this->removeFinishedJobs();
 
   int max_job_id = 0;
-  
-  for (auto job : jobs_list){
-    if (job.getJobId() > max_job_id){
-        max_job_id = job.getJobId();
+  if (jobs_list.size() > 0){
+    for (auto job : jobs_list){
+      if (job.getJobId() > max_job_id){
+          max_job_id = job.getJobId();
+      }
     }
   }
 
-  pid_t pid = cmd->pid; 
+  // pid_t pid = cmd->pid; 
   time_t time;
   if (std::time(&time) < 0){
+    cout << "time error ";
     return; //TODO: error handling. also, should we do this time thing here or outside?
   }
-  jobs_list.push_back(JobEntry((max_job_id+1), pid=pid, time, isStopped, (cmd->cmd_vec)));
+  jobs_list.push_back(JobEntry((max_job_id+1), time, isStopped, cmd));
+  // cout << "addJob ok ";
 }
 
 void JobsList::printJobsList(){
   // Remove finished jobs
-  this->removeFinishedJobs();
 
-  if (jobs_list.size() == 0){
-    return; //empty list
-  }
+  cout << "before remove finished ";
+  this->removeFinishedJobs();
+  cout << "after remove finished ";
+  // if (jobs_list.size() == 0){
+  //   return; //empty list
+  // }
   for(auto& job : jobs_list){
     cout << "[" << job.getJobId() << "] ";
     cout << job.getCmdName() << " : ";
@@ -354,7 +359,7 @@ void JobsList::removeFinishedJobs(){
   // Checks if *non-stopped* jobs are finished
   for (auto it=jobs_list.begin(); it != jobs_list.end(); it++){
     int status;
-    if(!it->isStopped() && waitpid(it->getJobPid(), &status, WNOHANG)!=0){
+    if(it->isBackground() && waitpid(it->getJobPid(), &status, WNOHANG)!=0){
       it->markFinished();
     }
   }
@@ -609,11 +614,12 @@ void BgCommand::execute(){
 }
 
 //jobs
-JobsCommand::JobsCommand(const char* cmd_line, JobsList* jobs): BuiltInCommand(cmd_line){
-  this->jobs = jobs; 
+JobsCommand::JobsCommand(const char* cmd_line, JobsList* jobs): BuiltInCommand(cmd_line), jobs(jobs){
+  cout << "In JobsCommand ctor";
 }
 
 void JobsCommand::execute(){
+  cout << "in jobs ";
   if (jobs != nullptr){
     jobs->printJobsList();
   }
@@ -678,71 +684,76 @@ ExternalCommand::ExternalCommand(const char* cmd_line): Command(cmd_line){}
 
 void ExternalCommand::execute(){
   SmallShell& smash = SmallShell::getInstance();
+
+  // cout << "pid before fork " << this->pid << " || ";
   pid_t pid = fork(); // danger: error handling ?
-    this->pid = pid;  
-    if(pid == 0) // son procces
-    {
-      if (setpgrp() == -1) {
-        perror("smash error: setpgrp failed");
-        return;
-      }
-      // string trimmed_cmd_line = _trim(string(cmd_line));  //! danger: Doesnt trim inside spaces
-      // char cmd_line_array[COMMAND_ARGS_MAX_LENGTH]; //It's not an array, its a char*
-      // strcpy(cmd_line_array, trimmed_cmd_line.c_str()); 
-      
-      // char argv[COMMAND_ARGS_MAX_LENGTH*COMMAND_MAX_ARGS];
-      string cmd_string = "";
-      string cmd_name_string = cmd_vec[0];
-      char* cmd_name = const_cast<char*>(cmd_name_string.c_str()); // Danger: error handling (e.g empty vec)
-      for (size_t i=1; i<cmd_vec.size(); i++){
-        cmd_string += cmd_vec[i];
-        if (i < cmd_vec.size()-1){
-          cmd_string += " ";
-        }
-      }
-      cmd_string += "\0";
-
-      // char *args[2];
-      // args[0] = const_cast<char*>(cmd_vec[0].c_str());  // First arg - name of executable
-      // args[1] = const_cast<char*>(cmd_string.c_str());  // Second arg - 
-
-      if(strstr(cmd_line, "*") || strstr(cmd_line, "?")) // complex external command run using bash
-      {
-        cmd_string = cmd_name_string + cmd_string;  // In complex external, we need the command name in the beginning
-        char* cmd_string_char = const_cast<char*>(cmd_string.c_str());  // Danger: conversion- string to const char* to char*
-        // char bash_path[] = "/bin/bash";
-        char flag[] = "-c";
-        char *args_bash[] = {"/bin/bash", "-c", cmd_string_char, NULL};
-
-        if (execv(args_bash[0], args_bash) == -1) {  
-            perror("smash error: execv failed");
-            return;
-        }
-
-      }
-      else  //simple external command run using execv syscalls
-      {
-        char* cmd_string_char = const_cast<char*>(cmd_string.c_str());
-        // cout << "In simple external ";
-        char *args[] = {cmd_name, cmd_string_char ,NULL}; 
-        if (execvp(args[0], args) == -1) {
-            perror("smash error: execv failed");
-            return;
-        }
+  this->pid = pid;  
+  if(pid == 0) // son procces
+  {
+    if (setpgrp() == -1) {
+      perror("smash error: setpgrp failed");
+      return;
+    }
+    // string trimmed_cmd_line = _trim(string(cmd_line));  //! danger: Doesnt trim inside spaces
+    // char cmd_line_array[COMMAND_ARGS_MAX_LENGTH]; //It's not an array, its a char*
+    // strcpy(cmd_line_array, trimmed_cmd_line.c_str()); 
+    
+    // char argv[COMMAND_ARGS_MAX_LENGTH*COMMAND_MAX_ARGS];
+    string cmd_string = "";
+    string cmd_name_string = cmd_vec[0];
+    char* cmd_name = const_cast<char*>(cmd_name_string.c_str()); // Danger: error handling (e.g empty vec)
+    for (size_t i=1; i<cmd_vec.size(); i++){
+      cmd_string += cmd_vec[i];
+      if (i < cmd_vec.size()-1){
+        cmd_string += " ";
       }
     }
-    else // father procces
+    cmd_string += "\0";
+
+    // char *args[2];
+    // args[0] = const_cast<char*>(cmd_vec[0].c_str());  // First arg - name of executable
+    // args[1] = const_cast<char*>(cmd_string.c_str());  // Second arg - 
+
+    if(strstr(cmd_line, "*") || strstr(cmd_line, "?")) // complex external command run using bash
     {
-      if(!this->is_bg){
-        int status;
-        if(waitpid(pid, &status, WUNTRACED) == -1){
-        perror("smash error: waitpid failed");
-        }
+      cmd_string = cmd_name_string + cmd_string;  // In complex external, we need the command name in the beginning
+      char* cmd_string_char = const_cast<char*>(cmd_string.c_str());  // Danger: conversion- string to const char* to char*
+      // char bash_path[] = "/bin/bash";
+      char flag[] = "-c";
+      char *args_bash[] = {"/bin/bash", "-c", cmd_string_char, NULL};
+
+      if (execv(args_bash[0], args_bash) == -1) {  
+          perror("smash error: execv failed");
+          return;
       }
-      else{
-        smash.jobs_list->addJob(this);
+
+    }
+    else  //simple external command run using execv syscalls
+    {
+      char* cmd_string_char = const_cast<char*>(cmd_string.c_str());
+      // cout << "In simple external ";
+      char *args[] = {cmd_name, cmd_string_char ,NULL}; 
+      if (execvp(args[0], args) == -1) {
+          perror("smash error: execv failed");
+          return;
       }
     }
+  }
+  else // father procces
+  {
+    if(!this->is_bg){
+      int status;
+      if(waitpid(pid, &status, WUNTRACED) == -1){
+      perror("smash error: waitpid failed");
+      }
+    }
+    else{
+      // cout << "pid after fork " << this->pid ;
+      smash.jobs_list->addJob(this);
+      // smash.jobs_list->printJobsList();
+      cout << "add job ok after fork ";
+    }
+  }
 }
 
 //----------------------------------------------------------------------------------------------//

@@ -1,3 +1,5 @@
-sleep 2&
-showpid
+sleep 2 &
+jobs
+chprompt hello
+chprompt
 quit

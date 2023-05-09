@@ -1,2 +1,1 @@
-smash> smash> smash pid is 24000
-smash> 
+smash> add job ok after fork smash> In JobsCommand ctorin jobs before remove finished after remove finished [1] sleep : 31394 
