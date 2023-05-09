@@ -678,7 +678,11 @@ ExternalCommand::ExternalCommand(const char* cmd_line): Command(cmd_line){}
 
 void ExternalCommand::execute(){
   SmallShell& smash = SmallShell::getInstance();
-  pid_t pid = fork(); // danger: error handling ?
+  pid_t pid = fork();
+  if(pid == -1){
+    perror("smash error: fork failed");
+    return;
+  }
     this->pid = pid;  
     if(pid == 0) // son procces
     {
@@ -755,9 +759,33 @@ void PipeCommand::execute(){
   string s = string(cmd_line);
   string pipeType = s.find("|&") == string::npos ? "|" : "|&";
   int i = s.find(pipeType);
-  string command1 = s.substr(0,i-1);
-  string command2;
-  if(pipeType == "|&") {  //redirect stderr
+  string command1 = s.substr(0,i-1);  //command to redirect its output (first one before | or |&)
+  string command2; //command to redirect its output (one before | or |&)
+  int filedes[2];
+  int pipe(filedes);
+  if(pipe == -1){
+    perror("smash error: pipe failed");
+    if (close(filedes[0]) == -1 || close(filedes[1]) == -1) {
+      perror("smash error: close failed");
+    }
+    return;
+  }
+  pid_t pid = fork();
+  if(pid == -1){
+    perror("smash error: fork failed");
+  }
+  if(pid == 0){ // son procces
+    if (setpgrp() == -1) {
+        perror("smash error: setpgrp failed");
+        return;
+      }
+  }
+  else{// father procces
+
+  }
+
+
+  if(pipeType == "|&") {  //command to redirect the output to (one after | or |&)
     command2 = s.substr(i+2, s.length());
   }
   else {  //redirect stdout
