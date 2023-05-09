@@ -700,12 +700,12 @@ void ExternalCommand::execute(){
     }
     else // father procces
     {
-      smash.jobs_list->addJob(this);  //hopefully this is ok cause i pass externalcommand and not command - MAYA: its ok, they inherit from Command
-      int status;
       if(!_isBackgroundComamnd(cmd_line)){
+        smash.jobs_list->addJob(this);  //stav: moved i think it is only for running in background
+        int status;
         if(waitpid(pid, &status, WUNTRACED) == -1){
         perror("smash error: waitpid failed");
-      }
+        }
       }
     }
 }
@@ -716,7 +716,19 @@ void ExternalCommand::execute(){
 
 PipeCommand::PipeCommand(const char* cmd_line): Command(cmd_line){}
 
-void PipeCommand::execute(){}
+void PipeCommand::execute(){
+  string s = string(cmd_line);
+  string pipeType = s.find("|&") == string::npos ? "|" : "|&";
+  int i = s.find(pipeType);
+  string command1 = s.substr(0,i-1);
+  string command2;
+  if(pipeType == "|&") {  //redirect stderr
+    command2 = s.substr(i+2, s.length());
+  }
+  else {  //redirect stdout
+    command2 = s.substr(i+1, s.length());
+  }
+}
 
 
 //----------------------------------------------------------------------------------------------//
@@ -725,6 +737,18 @@ void PipeCommand::execute(){}
 
 RedirectionCommand::RedirectionCommand(const char* cmd_line): Command(cmd_line){}
 
-void RedirectionCommand::execute(){}
+void RedirectionCommand::execute(){
+  string s = string(cmd_line);
+  string redirectionType = s.find(">>") == string::npos ? ">" : ">>";
+  int i = s.find(redirectionType);
+  string command = s.substr(0,i-1);
+  string output_file;
+  if(redirectionType == ">>") {  //append
+    output_file = s.substr(i+2, s.length());
+  }
+  else {  //override
+    output_file = s.substr(i+1, s.length());
+  }
+}
 
 //----------------------------------------------------------------------------------------------//
