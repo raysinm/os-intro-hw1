@@ -17,6 +17,7 @@ class Command {
   pid_t pid;
   // std::string cmd_name;
   std::vector<std::string> cmd_vec;
+  bool is_bg;
  public:  // Methods
   Command(const char* orig_cmd_line);
   virtual ~Command();
@@ -25,6 +26,7 @@ class Command {
   //virtual void prepare();
   //virtual void cleanup();
   // TODO: Add your extra methods if needed
+
 };
 
 class BuiltInCommand : public Command {
@@ -35,7 +37,6 @@ class BuiltInCommand : public Command {
 };
 
 class ExternalCommand : public Command {
-  char* args[COMMAND_MAX_ARGS+2];
  public:
   ExternalCommand(const char* cmd_line);
   virtual ~ExternalCommand() {}
@@ -263,6 +264,7 @@ public:   // Methods
   //----OUR METHODS
   std::string& get_prompt();
   void set_prompt(const std::string& new_prompt);
+  void checkJobs();
 };
 
 #endif //SMASH_COMMAND_H_

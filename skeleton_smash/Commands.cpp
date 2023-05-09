@@ -169,7 +169,6 @@ void SmallShell::setLastDir(){
 * Creates and returns a pointer to Command class which matches the given command line (cmd_line)
 */
 Command * SmallShell::CreateCommand(const char* cmd_line) {
-
   std::string cmd_s = _trim(string(cmd_line));  // cmd_s is a string that includes whitespace within
   string firstWord = cmd_s.substr(0, cmd_s.find_first_of(" \n"));
   
@@ -203,8 +202,9 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
   else if(firstWord.compare("jobs")==0){
     return new JobsCommand(cmd_line, jobs_list);
   }
-  else{
+  else{ // Currently only external commands (notice is_bg is only for external)
     return new ExternalCommand(cmd_line);
+
   }
   return nullptr;
 }
@@ -215,6 +215,7 @@ void SmallShell::executeCommand(const char *cmd_line) {
   if (cmd != nullptr){
     // cout << (*(cmd->cmd_vec))[0] << endl ;
     // cout << "Cmd pid " << cmd->pid;
+    this->jobs_list->removeFinishedJobs();  // Remove finished jobs
     cmd->execute();
     delete cmd;
   }
@@ -231,6 +232,9 @@ void SmallShell::set_prompt(const std::string& new_prompt){
 
 }
 
+void SmallShell::checkJobs(){
+  
+}
 //----------------------------------------------------------------------------------------------//
 
 
@@ -243,6 +247,9 @@ JobsList::~JobsList(){}
 
 void JobsList::addJob(Command* cmd, bool isStopped){
   
+  // Remove finished jobs
+  this->removeFinishedJobs();
+
   int max_job_id = 0;
   
   for (auto job : jobs_list){
@@ -260,7 +267,9 @@ void JobsList::addJob(Command* cmd, bool isStopped){
 }
 
 void JobsList::printJobsList(){
-  
+  // Remove finished jobs
+  this->removeFinishedJobs();
+
   if (jobs_list.size() == 0){
     return; //empty list
   }
@@ -325,7 +334,7 @@ void JobsList::removeJobById(int jobId){
 }
 
 void JobsList::killAllJobs(int sig){
-  // Sends a SIGKILL to all jobs in the list and updates their 'is_finished'
+  // Sends 'sig' to all jobs in the list
   for (auto& job : jobs_list){
     string cmd_line = "";
     for (auto str : job.getCmdVec()){
@@ -333,12 +342,24 @@ void JobsList::killAllJobs(int sig){
     }
     cout << job.getJobPid() << " " << cmd_line << endl;
     kill(job.getJobPid(), sig);
-    job.markFinished();
+    
+    // If sig -- SIGKIL updates the jobs' 'is_finished' to finished
+    if (sig == SIGKILL){
+      job.markFinished();
+    }  
   }
 }
 
-void JobsList::removeFinishedJobs(){
-  // Removes form list jobs that are finished
+void JobsList::removeFinishedJobs(){  
+  // Checks if *non-stopped* jobs are finished
+  for (auto it=jobs_list.begin(); it != jobs_list.end(); it++){
+    int status;
+    if(!it->isStopped() && waitpid(it->getJobPid(), &status, WNOHANG)!=0){
+      it->markFinished();
+    }
+  }
+  
+  // Removes form list all jobs that are finished
   for (auto it=jobs_list.begin(); it != jobs_list.end(); it++){
     if (it->isFinished()){
       jobs_list.erase(it);
@@ -346,6 +367,7 @@ void JobsList::removeFinishedJobs(){
   }
   return;
 }
+
 
 //----------------------------------------------------------------------------------------------//
 
@@ -356,11 +378,15 @@ void JobsList::removeFinishedJobs(){
 
 
 Command::Command(const char* orig_cmd_line): cmd_line(new char[strlen(orig_cmd_line)+1]), pid(getpid()),
-                                             cmd_vec(){
+                                             cmd_vec(), is_bg(false){
   
   strcpy(this->cmd_line, orig_cmd_line);
+  if(_isBackgroundComamnd(orig_cmd_line)){
+    _removeBackgroundSign(this->cmd_line);
+    this->is_bg = true;
+  }
   
-  this->_vectorize_cmdline(orig_cmd_line);
+  this->_vectorize_cmdline(this->cmd_line);
         
   // cout << "In Command ";
   // cout << this;
@@ -676,8 +702,9 @@ void ExternalCommand::execute(){
       }
       cmd_string += "\0";
 
-      args[0] = const_cast<char*>(cmd_vec[0].c_str());  // First arg - name of executable
-      args[1] = const_cast<char*>(cmd_string.c_str());  // Second arg - 
+      // char *args[2];
+      // args[0] = const_cast<char*>(cmd_vec[0].c_str());  // First arg - name of executable
+      // args[1] = const_cast<char*>(cmd_string.c_str());  // Second arg - 
 
       if(strstr(cmd_line, "*") || strstr(cmd_line, "?")) // complex external command run using bash
       {
@@ -706,12 +733,14 @@ void ExternalCommand::execute(){
     }
     else // father procces
     {
-      if(!_isBackgroundComamnd(cmd_line)){
-        smash.jobs_list->addJob(this);  //stav: moved i think it is only for running in background
+      if(!this->is_bg){
         int status;
         if(waitpid(pid, &status, WUNTRACED) == -1){
         perror("smash error: waitpid failed");
         }
+      }
+      else{
+        smash.jobs_list->addJob(this);
       }
     }
 }
