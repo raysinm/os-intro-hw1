@@ -1,499 +1,92 @@
-==3877== Memcheck, a memory error detector
-==3877== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
-==3877== Using Valgrind-3.13.0 and LibVEX; rerun with -h for copyright info
-==3877== Command: ./smash
-==3877== Parent PID: 3870
-==3877== 
-==3877== Syscall param wait4(status) contains uninitialised byte(s)
-==3877==    at 0x54C3457: waitpid (waitpid.c:30)
-==3877==    by 0x10DC92: ExternalCommand::execute() (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3877==    by 0x10BECA: SmallShell::executeCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3877==    by 0x111C62: main (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3877== 
-==3895== Invalid read of size 4
-==3895==    at 0x10C1EB: JobsList::printJobsList() (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3895==    by 0x10D4F6: JobsCommand::execute() (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3895==    by 0x10BECA: SmallShell::executeCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3895==    by 0x111C62: main (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3895==  Address 0x0 is not stack'd, malloc'd or (recently) free'd
-==3895== 
-==3895== 
-==3895== Process terminating with default action of signal 11 (SIGSEGV)
-==3895==  Access not within mapped region at address 0x0
-==3895==    at 0x10C1EB: JobsList::printJobsList() (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3895==    by 0x10D4F6: JobsCommand::execute() (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3895==    by 0x10BECA: SmallShell::executeCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3895==    by 0x111C62: main (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3895==  If you believe this happened as a result of a stack
-==3895==  overflow in your program's main thread (unlikely but
-==3895==  possible), you can try to increase the size of the
-==3895==  main thread stack using the --main-stacksize= flag.
-==3895==  The main thread stack size used in this run was 8388608.
-==3904== Syscall param wait4(status) contains uninitialised byte(s)
-==3903== Syscall param wait4(status) contains uninitialised byte(s)
-==3903==    at 0x54C3457: waitpid (waitpid.c:30)
-==3903==    by 0x10DC92: ExternalCommand::execute() (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3903==    by 0x10BECA: SmallShell::executeCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3903==    by 0x111C62: main (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3903== 
-==3904==    at 0x54C3457: waitpid (waitpid.c:30)
-==3904==    by 0x10DC92: ExternalCommand::execute() (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3904==    by 0x10BECA: SmallShell::executeCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3904==    by 0x111C62: main (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3904== 
-==3895== 
-==3895== HEAP SUMMARY:
-==3895==     in use at exit: 230 bytes in 6 blocks
-==3895==   total heap usage: 35 allocs, 29 frees, 84,294 bytes allocated
-==3895== 
-==3895== 6 bytes in 1 blocks are still reachable in loss record 1 of 6
-==3895==    at 0x4C3289F: operator new[](unsigned long) (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
-==3895==    by 0x10C8C4: Command::Command(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3895==    by 0x10C9E0: BuiltInCommand::BuiltInCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3895==    by 0x10D4B0: JobsCommand::JobsCommand(char const*, JobsList*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3895==    by 0x10BD16: SmallShell::CreateCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3895==    by 0x10BEA8: SmallShell::executeCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3895==    by 0x111C62: main (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3895== 
-==3895== 24 bytes in 1 blocks are still reachable in loss record 2 of 6
-==3895==    at 0x4C3217F: operator new(unsigned long) (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
-==3895==    by 0x10B75D: SmallShell::SmallShell() (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3895==    by 0x10E7B7: SmallShell::getInstance() (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3895==    by 0x111BF7: main (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3895== 
-==3895== 32 bytes in 1 blocks are still reachable in loss record 3 of 6
-==3895==    at 0x4C3217F: operator new(unsigned long) (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
-==3895==    by 0x110C3B: __gnu_cxx::new_allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >::allocate(unsigned long, void const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3895==    by 0x1108B8: std::allocator_traits<std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::allocate(std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >&, unsigned long) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3895==    by 0x1101B7: std::_Vector_base<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::_M_allocate(unsigned long) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3895==    by 0x10FB0F: void std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::_M_realloc_insert<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >(__gnu_cxx::__normal_iterator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >*, std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&&) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3895==    by 0x10F445: void std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::emplace_back<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&&) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3895==    by 0x10EC07: std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::push_back(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&&) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3895==    by 0x10B3BB: Command::_vectorize_cmdline(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3895==    by 0x10C917: Command::Command(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3895==    by 0x10C9E0: BuiltInCommand::BuiltInCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3895==    by 0x10D4B0: JobsCommand::JobsCommand(char const*, JobsList*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3895==    by 0x10BD16: SmallShell::CreateCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3895== 
-==3895== 48 bytes in 1 blocks are still reachable in loss record 4 of 6
-==3895==    at 0x4C3217F: operator new(unsigned long) (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
-==3895==    by 0x110D22: __gnu_cxx::new_allocator<JobsList::JobEntry>::allocate(unsigned long, void const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3895==    by 0x110B5F: std::allocator_traits<std::allocator<JobsList::JobEntry> >::allocate(std::allocator<JobsList::JobEntry>&, unsigned long) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3895==    by 0x110753: std::_Vector_base<JobsList::JobEntry, std::allocator<JobsList::JobEntry> >::_M_allocate(unsigned long) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3895==    by 0x10FE77: void std::vector<JobsList::JobEntry, std::allocator<JobsList::JobEntry> >::_M_realloc_insert<JobsList::JobEntry>(__gnu_cxx::__normal_iterator<JobsList::JobEntry*, std::vector<JobsList::JobEntry, std::allocator<JobsList::JobEntry> > >, JobsList::JobEntry&&) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3895==    by 0x10F5F9: void std::vector<JobsList::JobEntry, std::allocator<JobsList::JobEntry> >::emplace_back<JobsList::JobEntry>(JobsList::JobEntry&&) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3895==    by 0x10EE17: std::vector<JobsList::JobEntry, std::allocator<JobsList::JobEntry> >::push_back(JobsList::JobEntry&&) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3895==    by 0x10C07C: JobsList::addJob(Command*, bool) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3895==    by 0x10DC5C: ExternalCommand::execute() (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3895==    by 0x10BECA: SmallShell::executeCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3895==    by 0x111C62: main (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3895== 
-==3895== 56 bytes in 1 blocks are still reachable in loss record 5 of 6
-==3895==    at 0x4C3217F: operator new(unsigned long) (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
-==3895==    by 0x10BCFC: SmallShell::CreateCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3895==    by 0x10BEA8: SmallShell::executeCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3895==    by 0x111C62: main (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3895== 
-==3895== 64 bytes in 1 blocks are still reachable in loss record 6 of 6
-==3895==    at 0x4C3217F: operator new(unsigned long) (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
-==3895==    by 0x110C3B: __gnu_cxx::new_allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >::allocate(unsigned long, void const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3895==    by 0x1108B8: std::allocator_traits<std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::allocate(std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >&, unsigned long) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3895==    by 0x1101B7: std::_Vector_base<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::_M_allocate(unsigned long) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3895==    by 0x10F978: std::_Vector_base<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::_M_create_storage(unsigned long) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3895==    by 0x10F220: std::_Vector_base<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::_Vector_base(unsigned long, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > const&) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3895==    by 0x10EAB8: std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::vector(std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > const&) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3895==    by 0x10E89A: JobsList::JobEntry::JobEntry(JobsList::JobEntry const&) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3895==    by 0x1105C1: void __gnu_cxx::new_allocator<JobsList::JobEntry>::construct<JobsList::JobEntry, JobsList::JobEntry>(JobsList::JobEntry*, JobsList::JobEntry&&) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3895==    by 0x10FDF8: void std::allocator_traits<std::allocator<JobsList::JobEntry> >::construct<JobsList::JobEntry, JobsList::JobEntry>(std::allocator<JobsList::JobEntry>&, JobsList::JobEntry*, JobsList::JobEntry&&) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3895==    by 0x10FEC0: void std::vector<JobsList::JobEntry, std::allocator<JobsList::JobEntry> >::_M_realloc_insert<JobsList::JobEntry>(__gnu_cxx::__normal_iterator<JobsList::JobEntry*, std::vector<JobsList::JobEntry, std::allocator<JobsList::JobEntry> > >, JobsList::JobEntry&&) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3895==    by 0x10F5F9: void std::vector<JobsList::JobEntry, std::allocator<JobsList::JobEntry> >::emplace_back<JobsList::JobEntry>(JobsList::JobEntry&&) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3895== 
-==3895== LEAK SUMMARY:
-==3895==    definitely lost: 0 bytes in 0 blocks
-==3895==    indirectly lost: 0 bytes in 0 blocks
-==3895==      possibly lost: 0 bytes in 0 blocks
-==3895==    still reachable: 230 bytes in 6 blocks
-==3895==         suppressed: 0 bytes in 0 blocks
-==3895== 
-==3895== For counts of detected and suppressed errors, rerun with: -v
-==3895== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 0 from 0)
-==3905== 
-==3905== HEAP SUMMARY:
-==3905==     in use at exit: 94 bytes in 3 blocks
-==3905==   total heap usage: 58 allocs, 55 frees, 90,263 bytes allocated
-==3905== 
-==3905== 6 bytes in 1 blocks are still reachable in loss record 1 of 3
-==3905==    at 0x4C3289F: operator new[](unsigned long) (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
-==3905==    by 0x10C8C4: Command::Command(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3905==    by 0x10C9E0: BuiltInCommand::BuiltInCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3905==    by 0x10D520: QuitCommand::QuitCommand(char const*, JobsList*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3905==    by 0x10BC5A: SmallShell::CreateCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3905==    by 0x10BEA8: SmallShell::executeCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3905==    by 0x111C62: main (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3905== 
-==3905== 32 bytes in 1 blocks are still reachable in loss record 2 of 3
-==3905==    at 0x4C3217F: operator new(unsigned long) (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
-==3905==    by 0x110C3B: __gnu_cxx::new_allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >::allocate(unsigned long, void const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3905==    by 0x1108B8: std::allocator_traits<std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::allocate(std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >&, unsigned long) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3905==    by 0x1101B7: std::_Vector_base<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::_M_allocate(unsigned long) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3905==    by 0x10FB0F: void std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::_M_realloc_insert<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >(__gnu_cxx::__normal_iterator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >*, std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&&) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3905==    by 0x10F445: void std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::emplace_back<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&&) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3905==    by 0x10EC07: std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::push_back(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&&) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3905==    by 0x10B3BB: Command::_vectorize_cmdline(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3905==    by 0x10C917: Command::Command(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3905==    by 0x10C9E0: BuiltInCommand::BuiltInCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3905==    by 0x10D520: QuitCommand::QuitCommand(char const*, JobsList*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3905==    by 0x10BC5A: SmallShell::CreateCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3905== 
-==3905== 56 bytes in 1 blocks are still reachable in loss record 3 of 3
-==3905==    at 0x4C3217F: operator new(unsigned long) (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
-==3905==    by 0x10BC40: SmallShell::CreateCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3905==    by 0x10BEA8: SmallShell::executeCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3905==    by 0x111C62: main (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3905== 
-==3905== LEAK SUMMARY:
-==3905==    definitely lost: 0 bytes in 0 blocks
-==3905==    indirectly lost: 0 bytes in 0 blocks
-==3905==      possibly lost: 0 bytes in 0 blocks
-==3905==    still reachable: 94 bytes in 3 blocks
-==3905==         suppressed: 0 bytes in 0 blocks
-==3905== 
-==3905== For counts of detected and suppressed errors, rerun with: -v
-==3905== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==3906== 
-==3906== HEAP SUMMARY:
-==3906==     in use at exit: 94 bytes in 3 blocks
-==3906==   total heap usage: 59 allocs, 56 frees, 88,799 bytes allocated
-==3906== 
-==3906== 6 bytes in 1 blocks are still reachable in loss record 1 of 3
-==3906==    at 0x4C3289F: operator new[](unsigned long) (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
-==3906==    by 0x10C8C4: Command::Command(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3906==    by 0x10C9E0: BuiltInCommand::BuiltInCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3906==    by 0x10D520: QuitCommand::QuitCommand(char const*, JobsList*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3906==    by 0x10BC5A: SmallShell::CreateCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3906==    by 0x10BEA8: SmallShell::executeCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3906==    by 0x111C62: main (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3906== 
-==3906== 32 bytes in 1 blocks are still reachable in loss record 2 of 3
-==3906==    at 0x4C3217F: operator new(unsigned long) (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
-==3906==    by 0x110C3B: __gnu_cxx::new_allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >::allocate(unsigned long, void const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3906==    by 0x1108B8: std::allocator_traits<std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::allocate(std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >&, unsigned long) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3906==    by 0x1101B7: std::_Vector_base<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::_M_allocate(unsigned long) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3906==    by 0x10FB0F: void std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::_M_realloc_insert<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >(__gnu_cxx::__normal_iterator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >*, std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&&) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3906==    by 0x10F445: void std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::emplace_back<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&&) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3906==    by 0x10EC07: std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::push_back(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&&) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3906==    by 0x10B3BB: Command::_vectorize_cmdline(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3906==    by 0x10C917: Command::Command(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3906==    by 0x10C9E0: BuiltInCommand::BuiltInCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3906==    by 0x10D520: QuitCommand::QuitCommand(char const*, JobsList*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3906==    by 0x10BC5A: SmallShell::CreateCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3906== 
-==3906== 56 bytes in 1 blocks are still reachable in loss record 3 of 3
-==3906==    at 0x4C3217F: operator new(unsigned long) (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
-==3906==    by 0x10BC40: SmallShell::CreateCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3906==    by 0x10BEA8: SmallShell::executeCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3906==    by 0x111C62: main (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3906== 
-==3906== LEAK SUMMARY:
-==3906==    definitely lost: 0 bytes in 0 blocks
-==3906==    indirectly lost: 0 bytes in 0 blocks
-==3906==      possibly lost: 0 bytes in 0 blocks
-==3906==    still reachable: 94 bytes in 3 blocks
-==3906==         suppressed: 0 bytes in 0 blocks
-==3906== 
-==3906== For counts of detected and suppressed errors, rerun with: -v
-==3906== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==3904== 
-==3904== HEAP SUMMARY:
-==3904==     in use at exit: 94 bytes in 3 blocks
-==3904==   total heap usage: 61 allocs, 58 frees, 90,375 bytes allocated
-==3904== 
-==3904== 6 bytes in 1 blocks are still reachable in loss record 1 of 3
-==3904==    at 0x4C3289F: operator new[](unsigned long) (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
-==3904==    by 0x10C8C4: Command::Command(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3904==    by 0x10C9E0: BuiltInCommand::BuiltInCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3904==    by 0x10D520: QuitCommand::QuitCommand(char const*, JobsList*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3904==    by 0x10BC5A: SmallShell::CreateCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3904==    by 0x10BEA8: SmallShell::executeCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3904==    by 0x111C62: main (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3904== 
-==3904== 32 bytes in 1 blocks are still reachable in loss record 2 of 3
-==3904==    at 0x4C3217F: operator new(unsigned long) (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
-==3904==    by 0x110C3B: __gnu_cxx::new_allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >::allocate(unsigned long, void const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3904==    by 0x1108B8: std::allocator_traits<std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::allocate(std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >&, unsigned long) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3904==    by 0x1101B7: std::_Vector_base<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::_M_allocate(unsigned long) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3904==    by 0x10FB0F: void std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::_M_realloc_insert<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >(__gnu_cxx::__normal_iterator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >*, std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&&) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3904==    by 0x10F445: void std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::emplace_back<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&&) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3904==    by 0x10EC07: std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::push_back(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&&) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3904==    by 0x10B3BB: Command::_vectorize_cmdline(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3904==    by 0x10C917: Command::Command(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3904==    by 0x10C9E0: BuiltInCommand::BuiltInCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3904==    by 0x10D520: QuitCommand::QuitCommand(char const*, JobsList*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3904==    by 0x10BC5A: SmallShell::CreateCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3904== 
-==3904== 56 bytes in 1 blocks are still reachable in loss record 3 of 3
-==3904==    at 0x4C3217F: operator new(unsigned long) (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
-==3904==    by 0x10BC40: SmallShell::CreateCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3904==    by 0x10BEA8: SmallShell::executeCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3904==    by 0x111C62: main (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3904== 
-==3904== LEAK SUMMARY:
-==3904==    definitely lost: 0 bytes in 0 blocks
-==3904==    indirectly lost: 0 bytes in 0 blocks
-==3904==      possibly lost: 0 bytes in 0 blocks
-==3904==    still reachable: 94 bytes in 3 blocks
-==3904==         suppressed: 0 bytes in 0 blocks
-==3904== 
-==3904== For counts of detected and suppressed errors, rerun with: -v
-==3904== Use --track-origins=yes to see where uninitialised values come from
-==3904== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 0 from 0)
-==3903== 
-==3903== HEAP SUMMARY:
-==3903==     in use at exit: 94 bytes in 3 blocks
-==3903==   total heap usage: 64 allocs, 61 frees, 89,023 bytes allocated
-==3903== 
-==3903== 6 bytes in 1 blocks are still reachable in loss record 1 of 3
-==3903==    at 0x4C3289F: operator new[](unsigned long) (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
-==3903==    by 0x10C8C4: Command::Command(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3903==    by 0x10C9E0: BuiltInCommand::BuiltInCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3903==    by 0x10D520: QuitCommand::QuitCommand(char const*, JobsList*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3903==    by 0x10BC5A: SmallShell::CreateCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3903==    by 0x10BEA8: SmallShell::executeCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3903==    by 0x111C62: main (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3903== 
-==3903== 32 bytes in 1 blocks are still reachable in loss record 2 of 3
-==3903==    at 0x4C3217F: operator new(unsigned long) (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
-==3903==    by 0x110C3B: __gnu_cxx::new_allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >::allocate(unsigned long, void const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3903==    by 0x1108B8: std::allocator_traits<std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::allocate(std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >&, unsigned long) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3903==    by 0x1101B7: std::_Vector_base<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::_M_allocate(unsigned long) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3903==    by 0x10FB0F: void std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::_M_realloc_insert<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >(__gnu_cxx::__normal_iterator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >*, std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&&) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3903==    by 0x10F445: void std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::emplace_back<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&&) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3903==    by 0x10EC07: std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::push_back(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&&) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3903==    by 0x10B3BB: Command::_vectorize_cmdline(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3903==    by 0x10C917: Command::Command(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3903==    by 0x10C9E0: BuiltInCommand::BuiltInCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3903==    by 0x10D520: QuitCommand::QuitCommand(char const*, JobsList*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3903==    by 0x10BC5A: SmallShell::CreateCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3903== 
-==3903== 56 bytes in 1 blocks are still reachable in loss record 3 of 3
-==3903==    at 0x4C3217F: operator new(unsigned long) (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
-==3903==    by 0x10BC40: SmallShell::CreateCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3903==    by 0x10BEA8: SmallShell::executeCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3903==    by 0x111C62: main (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3903== 
-==3903== LEAK SUMMARY:
-==3903==    definitely lost: 0 bytes in 0 blocks
-==3903==    indirectly lost: 0 bytes in 0 blocks
-==3903==      possibly lost: 0 bytes in 0 blocks
-==3903==    still reachable: 94 bytes in 3 blocks
-==3903==         suppressed: 0 bytes in 0 blocks
-==3903== 
-==3903== For counts of detected and suppressed errors, rerun with: -v
-==3903== Use --track-origins=yes to see where uninitialised values come from
-==3903== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 0 from 0)
-==3877== Invalid read of size 4
-==3877==    at 0x10C1EB: JobsList::printJobsList() (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3877==    by 0x10D4F6: JobsCommand::execute() (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3877==    by 0x10BECA: SmallShell::executeCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3877==    by 0x111C62: main (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3877==  Address 0x0 is not stack'd, malloc'd or (recently) free'd
-==3877== 
-==3877== 
-==3877== Process terminating with default action of signal 11 (SIGSEGV)
-==3877==  Access not within mapped region at address 0x0
-==3877==    at 0x10C1EB: JobsList::printJobsList() (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3877==    by 0x10D4F6: JobsCommand::execute() (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3877==    by 0x10BECA: SmallShell::executeCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3877==    by 0x111C62: main (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3877==  If you believe this happened as a result of a stack
-==3877==  overflow in your program's main thread (unlikely but
-==3877==  possible), you can try to increase the size of the
-==3877==  main thread stack using the --main-stacksize= flag.
-==3877==  The main thread stack size used in this run was 8388608.
-==3967== Invalid read of size 4
-==3967==    at 0x10C1EB: JobsList::printJobsList() (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3967==    by 0x10D4F6: JobsCommand::execute() (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3967==    by 0x10BECA: SmallShell::executeCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3967==    by 0x111C62: main (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3967==  Address 0x0 is not stack'd, malloc'd or (recently) free'd
-==3967== 
-==3967== 
-==3967== Process terminating with default action of signal 11 (SIGSEGV)
-==3967==  Access not within mapped region at address 0x0
-==3967==    at 0x10C1EB: JobsList::printJobsList() (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3967==    by 0x10D4F6: JobsCommand::execute() (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3967==    by 0x10BECA: SmallShell::executeCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3967==    by 0x111C62: main (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3967==  If you believe this happened as a result of a stack
-==3967==  overflow in your program's main thread (unlikely but
-==3967==  possible), you can try to increase the size of the
-==3967==  main thread stack using the --main-stacksize= flag.
-==3967==  The main thread stack size used in this run was 8388608.
-==3967== 
-==3877== 
-==3877== HEAP SUMMARY:
-==3877==     in use at exit: 342 bytes in 7 blocks
-==3877==   total heap usage: 40 allocs, 33 frees, 84,646 bytes allocated
-==3877== 
-==3877== 6 bytes in 1 blocks are still reachable in loss record 1 of 7
-==3877==    at 0x4C3289F: operator new[](unsigned long) (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
-==3877==    by 0x10C8C4: Command::Command(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3877==    by 0x10C9E0: BuiltInCommand::BuiltInCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3877==    by 0x10D4B0: JobsCommand::JobsCommand(char const*, JobsList*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3877==    by 0x10BD16: SmallShell::CreateCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3877==    by 0x10BEA8: SmallShell::executeCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3877==    by 0x111C62: main (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3877== 
-==3877== 24 bytes in 1 blocks are still reachable in loss record 2 of 7
-==3877==    at 0x4C3217F: operator new(unsigned long) (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
-==3877==    by 0x10B75D: SmallShell::SmallShell() (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3877==    by 0x10E7B7: SmallShell::getInstance() (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3877==    by 0x111BF7: main (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3877== 
-==3877== 32 bytes in 1 blocks are still reachable in loss record 3 of 7
-==3877==    at 0x4C3217F: operator new(unsigned long) (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
-==3877==    by 0x110C3B: __gnu_cxx::new_allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >::allocate(unsigned long, void const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3877==    by 0x1108B8: std::allocator_traits<std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::allocate(std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >&, unsigned long) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3877==    by 0x1101B7: std::_Vector_base<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::_M_allocate(unsigned long) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3877==    by 0x10FB0F: void std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::_M_realloc_insert<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >(__gnu_cxx::__normal_iterator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >*, std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&&) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3877==    by 0x10F445: void std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::emplace_back<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&&) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3877==    by 0x10EC07: std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::push_back(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&&) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3877==    by 0x10B3BB: Command::_vectorize_cmdline(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3877==    by 0x10C917: Command::Command(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3877==    by 0x10C9E0: BuiltInCommand::BuiltInCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3877==    by 0x10D4B0: JobsCommand::JobsCommand(char const*, JobsList*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3877==    by 0x10BD16: SmallShell::CreateCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3877== 
-==3877== 56 bytes in 1 blocks are still reachable in loss record 4 of 7
-==3877==    at 0x4C3217F: operator new(unsigned long) (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
-==3877==    by 0x10BCFC: SmallShell::CreateCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3877==    by 0x10BEA8: SmallShell::executeCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3877==    by 0x111C62: main (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3877== 
-==3877== 64 bytes in 1 blocks are still reachable in loss record 5 of 7
-==3877==    at 0x4C3217F: operator new(unsigned long) (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
-==3877==    by 0x110C3B: __gnu_cxx::new_allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >::allocate(unsigned long, void const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3877==    by 0x1108B8: std::allocator_traits<std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::allocate(std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >&, unsigned long) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3877==    by 0x1101B7: std::_Vector_base<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::_M_allocate(unsigned long) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3877==    by 0x10F978: std::_Vector_base<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::_M_create_storage(unsigned long) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3877==    by 0x10F220: std::_Vector_base<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::_Vector_base(unsigned long, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > const&) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3877==    by 0x10EAB8: std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::vector(std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > const&) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3877==    by 0x10E89A: JobsList::JobEntry::JobEntry(JobsList::JobEntry const&) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3877==    by 0x1105C1: void __gnu_cxx::new_allocator<JobsList::JobEntry>::construct<JobsList::JobEntry, JobsList::JobEntry>(JobsList::JobEntry*, JobsList::JobEntry&&) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3877==    by 0x10FDF8: void std::allocator_traits<std::allocator<JobsList::JobEntry> >::construct<JobsList::JobEntry, JobsList::JobEntry>(std::allocator<JobsList::JobEntry>&, JobsList::JobEntry*, JobsList::JobEntry&&) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3877==    by 0x10FEC0: void std::vector<JobsList::JobEntry, std::allocator<JobsList::JobEntry> >::_M_realloc_insert<JobsList::JobEntry>(__gnu_cxx::__normal_iterator<JobsList::JobEntry*, std::vector<JobsList::JobEntry, std::allocator<JobsList::JobEntry> > >, JobsList::JobEntry&&) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3877==    by 0x10F5F9: void std::vector<JobsList::JobEntry, std::allocator<JobsList::JobEntry> >::emplace_back<JobsList::JobEntry>(JobsList::JobEntry&&) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3877== 
-==3877== 64 bytes in 1 blocks are still reachable in loss record 6 of 7
-==3877==    at 0x4C3217F: operator new(unsigned long) (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
-==3877==    by 0x110C3B: __gnu_cxx::new_allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >::allocate(unsigned long, void const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3877==    by 0x1108B8: std::allocator_traits<std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::allocate(std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >&, unsigned long) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3877==    by 0x1101B7: std::_Vector_base<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::_M_allocate(unsigned long) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3877==    by 0x10F978: std::_Vector_base<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::_M_create_storage(unsigned long) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3877==    by 0x10F220: std::_Vector_base<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::_Vector_base(unsigned long, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > const&) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3877==    by 0x10EAB8: std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::vector(std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > const&) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3877==    by 0x10E89A: JobsList::JobEntry::JobEntry(JobsList::JobEntry const&) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3877==    by 0x1113D7: void std::_Construct<JobsList::JobEntry, JobsList::JobEntry const&>(JobsList::JobEntry*, JobsList::JobEntry const&) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3877==    by 0x110F60: JobsList::JobEntry* std::__uninitialized_copy<false>::__uninit_copy<JobsList::JobEntry const*, JobsList::JobEntry*>(JobsList::JobEntry const*, JobsList::JobEntry const*, JobsList::JobEntry*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3877==    by 0x110D53: JobsList::JobEntry* std::uninitialized_copy<JobsList::JobEntry const*, JobsList::JobEntry*>(JobsList::JobEntry const*, JobsList::JobEntry const*, JobsList::JobEntry*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3877==    by 0x110B9E: JobsList::JobEntry* std::__uninitialized_copy_a<JobsList::JobEntry const*, JobsList::JobEntry*, JobsList::JobEntry>(JobsList::JobEntry const*, JobsList::JobEntry const*, JobsList::JobEntry*, std::allocator<JobsList::JobEntry>&) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3877== 
-==3877== 96 bytes in 1 blocks are still reachable in loss record 7 of 7
-==3877==    at 0x4C3217F: operator new(unsigned long) (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
-==3877==    by 0x110D22: __gnu_cxx::new_allocator<JobsList::JobEntry>::allocate(unsigned long, void const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3877==    by 0x110B5F: std::allocator_traits<std::allocator<JobsList::JobEntry> >::allocate(std::allocator<JobsList::JobEntry>&, unsigned long) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3877==    by 0x110753: std::_Vector_base<JobsList::JobEntry, std::allocator<JobsList::JobEntry> >::_M_allocate(unsigned long) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3877==    by 0x10FE77: void std::vector<JobsList::JobEntry, std::allocator<JobsList::JobEntry> >::_M_realloc_insert<JobsList::JobEntry>(__gnu_cxx::__normal_iterator<JobsList::JobEntry*, std::vector<JobsList::JobEntry, std::allocator<JobsList::JobEntry> > >, JobsList::JobEntry&&) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3877==    by 0x10F5F9: void std::vector<JobsList::JobEntry, std::allocator<JobsList::JobEntry> >::emplace_back<JobsList::JobEntry>(JobsList::JobEntry&&) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3877==    by 0x10EE17: std::vector<JobsList::JobEntry, std::allocator<JobsList::JobEntry> >::push_back(JobsList::JobEntry&&) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3877==    by 0x10C07C: JobsList::addJob(Command*, bool) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3877==    by 0x10DC5C: ExternalCommand::execute() (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3877==    by 0x10BECA: SmallShell::executeCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3877==    by 0x111C62: main (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3877== 
-==3877== LEAK SUMMARY:
-==3877==    definitely lost: 0 bytes in 0 blocks
-==3877==    indirectly lost: 0 bytes in 0 blocks
-==3877==      possibly lost: 0 bytes in 0 blocks
-==3877==    still reachable: 342 bytes in 7 blocks
-==3877==         suppressed: 0 bytes in 0 blocks
-==3877== 
-==3877== For counts of detected and suppressed errors, rerun with: -v
-==3877== Use --track-origins=yes to see where uninitialised values come from
-==3877== ERROR SUMMARY: 2 errors from 2 contexts (suppressed: 0 from 0)
-==3967== HEAP SUMMARY:
-==3967==     in use at exit: 230 bytes in 6 blocks
-==3967==   total heap usage: 37 allocs, 31 frees, 85,870 bytes allocated
-==3967== 
-==3967== 6 bytes in 1 blocks are still reachable in loss record 1 of 6
-==3967==    at 0x4C3289F: operator new[](unsigned long) (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
-==3967==    by 0x10C8C4: Command::Command(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3967==    by 0x10C9E0: BuiltInCommand::BuiltInCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3967==    by 0x10D4B0: JobsCommand::JobsCommand(char const*, JobsList*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3967==    by 0x10BD16: SmallShell::CreateCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3967==    by 0x10BEA8: SmallShell::executeCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3967==    by 0x111C62: main (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3967== 
-==3967== 24 bytes in 1 blocks are still reachable in loss record 2 of 6
-==3967==    at 0x4C3217F: operator new(unsigned long) (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
-==3967==    by 0x10B75D: SmallShell::SmallShell() (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3967==    by 0x10E7B7: SmallShell::getInstance() (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3967==    by 0x111BF7: main (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3967== 
-==3967== 32 bytes in 1 blocks are still reachable in loss record 3 of 6
-==3967==    at 0x4C3217F: operator new(unsigned long) (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
-==3967==    by 0x110C3B: __gnu_cxx::new_allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >::allocate(unsigned long, void const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3967==    by 0x1108B8: std::allocator_traits<std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::allocate(std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >&, unsigned long) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3967==    by 0x1101B7: std::_Vector_base<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::_M_allocate(unsigned long) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3967==    by 0x10FB0F: void std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::_M_realloc_insert<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >(__gnu_cxx::__normal_iterator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >*, std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&&) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3967==    by 0x10F445: void std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::emplace_back<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&&) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3967==    by 0x10EC07: std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::push_back(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&&) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3967==    by 0x10B3BB: Command::_vectorize_cmdline(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3967==    by 0x10C917: Command::Command(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3967==    by 0x10C9E0: BuiltInCommand::BuiltInCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3967==    by 0x10D4B0: JobsCommand::JobsCommand(char const*, JobsList*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3967==    by 0x10BD16: SmallShell::CreateCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3967== 
-==3967== 48 bytes in 1 blocks are still reachable in loss record 4 of 6
-==3967==    at 0x4C3217F: operator new(unsigned long) (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
-==3967==    by 0x110D22: __gnu_cxx::new_allocator<JobsList::JobEntry>::allocate(unsigned long, void const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3967==    by 0x110B5F: std::allocator_traits<std::allocator<JobsList::JobEntry> >::allocate(std::allocator<JobsList::JobEntry>&, unsigned long) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3967==    by 0x110753: std::_Vector_base<JobsList::JobEntry, std::allocator<JobsList::JobEntry> >::_M_allocate(unsigned long) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3967==    by 0x10FE77: void std::vector<JobsList::JobEntry, std::allocator<JobsList::JobEntry> >::_M_realloc_insert<JobsList::JobEntry>(__gnu_cxx::__normal_iterator<JobsList::JobEntry*, std::vector<JobsList::JobEntry, std::allocator<JobsList::JobEntry> > >, JobsList::JobEntry&&) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3967==    by 0x10F5F9: void std::vector<JobsList::JobEntry, std::allocator<JobsList::JobEntry> >::emplace_back<JobsList::JobEntry>(JobsList::JobEntry&&) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3967==    by 0x10EE17: std::vector<JobsList::JobEntry, std::allocator<JobsList::JobEntry> >::push_back(JobsList::JobEntry&&) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3967==    by 0x10C07C: JobsList::addJob(Command*, bool) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3967==    by 0x10DC5C: ExternalCommand::execute() (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3967==    by 0x10BECA: SmallShell::executeCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3967==    by 0x111C62: main (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3967== 
-==3967== 56 bytes in 1 blocks are still reachable in loss record 5 of 6
-==3967==    at 0x4C3217F: operator new(unsigned long) (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
-==3967==    by 0x10BCFC: SmallShell::CreateCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3967==    by 0x10BEA8: SmallShell::executeCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3967==    by 0x111C62: main (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3967== 
-==3967== 64 bytes in 1 blocks are still reachable in loss record 6 of 6
-==3967==    at 0x4C3217F: operator new(unsigned long) (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
-==3967==    by 0x110C3B: __gnu_cxx::new_allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >::allocate(unsigned long, void const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3967==    by 0x1108B8: std::allocator_traits<std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::allocate(std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >&, unsigned long) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3967==    by 0x1101B7: std::_Vector_base<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::_M_allocate(unsigned long) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3967==    by 0x10F978: std::_Vector_base<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::_M_create_storage(unsigned long) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3967==    by 0x10F220: std::_Vector_base<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::_Vector_base(unsigned long, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > const&) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3967==    by 0x10EAB8: std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::vector(std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > const&) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3967==    by 0x10E89A: JobsList::JobEntry::JobEntry(JobsList::JobEntry const&) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3967==    by 0x1105C1: void __gnu_cxx::new_allocator<JobsList::JobEntry>::construct<JobsList::JobEntry, JobsList::JobEntry>(JobsList::JobEntry*, JobsList::JobEntry&&) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3967==    by 0x10FDF8: void std::allocator_traits<std::allocator<JobsList::JobEntry> >::construct<JobsList::JobEntry, JobsList::JobEntry>(std::allocator<JobsList::JobEntry>&, JobsList::JobEntry*, JobsList::JobEntry&&) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3967==    by 0x10FEC0: void std::vector<JobsList::JobEntry, std::allocator<JobsList::JobEntry> >::_M_realloc_insert<JobsList::JobEntry>(__gnu_cxx::__normal_iterator<JobsList::JobEntry*, std::vector<JobsList::JobEntry, std::allocator<JobsList::JobEntry> > >, JobsList::JobEntry&&) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3967==    by 0x10F5F9: void std::vector<JobsList::JobEntry, std::allocator<JobsList::JobEntry> >::emplace_back<JobsList::JobEntry>(JobsList::JobEntry&&) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
-==3967== 
-==3967== LEAK SUMMARY:
-==3967==    definitely lost: 0 bytes in 0 blocks
-==3967==    indirectly lost: 0 bytes in 0 blocks
-==3967==      possibly lost: 0 bytes in 0 blocks
-==3967==    still reachable: 230 bytes in 6 blocks
-==3967==         suppressed: 0 bytes in 0 blocks
-==3967== 
-==3967== For counts of detected and suppressed errors, rerun with: -v
-==3967== Use --track-origins=yes to see where uninitialised values come from
-==3967== ERROR SUMMARY: 2 errors from 2 contexts (suppressed: 0 from 0)
+==21873== Memcheck, a memory error detector
+==21873== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==21873== Using Valgrind-3.13.0 and LibVEX; rerun with -h for copyright info
+==21873== Command: ./smash
+==21873== Parent PID: 21866
+==21873== 
+==21884== 
+==21884== HEAP SUMMARY:
+==21884==     in use at exit: 94 bytes in 3 blocks
+==21884==   total heap usage: 18 allocs, 15 frees, 83,268 bytes allocated
+==21884== 
+==21884== 6 bytes in 1 blocks are still reachable in loss record 1 of 3
+==21884==    at 0x4C3289F: operator new[](unsigned long) (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==21884==    by 0x10C9D4: Command::Command(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
+==21884==    by 0x10CAF0: BuiltInCommand::BuiltInCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
+==21884==    by 0x10D66C: QuitCommand::QuitCommand(char const*, JobsList*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
+==21884==    by 0x10BD6A: SmallShell::CreateCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
+==21884==    by 0x10BFB8: SmallShell::executeCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
+==21884==    by 0x1122F2: main (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
+==21884== 
+==21884== 32 bytes in 1 blocks are still reachable in loss record 2 of 3
+==21884==    at 0x4C3217F: operator new(unsigned long) (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==21884==    by 0x1112CB: __gnu_cxx::new_allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >::allocate(unsigned long, void const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
+==21884==    by 0x110F48: std::allocator_traits<std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::allocate(std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >&, unsigned long) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
+==21884==    by 0x110847: std::_Vector_base<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::_M_allocate(unsigned long) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
+==21884==    by 0x11019F: void std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::_M_realloc_insert<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >(__gnu_cxx::__normal_iterator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >*, std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&&) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
+==21884==    by 0x10FAD5: void std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::emplace_back<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&&) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
+==21884==    by 0x10F297: std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::push_back(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&&) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
+==21884==    by 0x10B4CB: Command::_vectorize_cmdline(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
+==21884==    by 0x10CA27: Command::Command(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
+==21884==    by 0x10CAF0: BuiltInCommand::BuiltInCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
+==21884==    by 0x10D66C: QuitCommand::QuitCommand(char const*, JobsList*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
+==21884==    by 0x10BD6A: SmallShell::CreateCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
+==21884== 
+==21884== 56 bytes in 1 blocks are still reachable in loss record 3 of 3
+==21884==    at 0x4C3217F: operator new(unsigned long) (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==21884==    by 0x10BD50: SmallShell::CreateCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
+==21884==    by 0x10BFB8: SmallShell::executeCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
+==21884==    by 0x1122F2: main (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
+==21884== 
+==21884== LEAK SUMMARY:
+==21884==    definitely lost: 0 bytes in 0 blocks
+==21884==    indirectly lost: 0 bytes in 0 blocks
+==21884==      possibly lost: 0 bytes in 0 blocks
+==21884==    still reachable: 94 bytes in 3 blocks
+==21884==         suppressed: 0 bytes in 0 blocks
+==21884== 
+==21884== For counts of detected and suppressed errors, rerun with: -v
+==21884== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==21873== 
+==21873== HEAP SUMMARY:
+==21873==     in use at exit: 94 bytes in 3 blocks
+==21873==   total heap usage: 19 allocs, 16 frees, 81,868 bytes allocated
+==21873== 
+==21873== 6 bytes in 1 blocks are still reachable in loss record 1 of 3
+==21873==    at 0x4C3289F: operator new[](unsigned long) (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==21873==    by 0x10C9D4: Command::Command(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
+==21873==    by 0x10CAF0: BuiltInCommand::BuiltInCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
+==21873==    by 0x10D66C: QuitCommand::QuitCommand(char const*, JobsList*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
+==21873==    by 0x10BD6A: SmallShell::CreateCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
+==21873==    by 0x10BFB8: SmallShell::executeCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
+==21873==    by 0x1122F2: main (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
+==21873== 
+==21873== 32 bytes in 1 blocks are still reachable in loss record 2 of 3
+==21873==    at 0x4C3217F: operator new(unsigned long) (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==21873==    by 0x1112CB: __gnu_cxx::new_allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >::allocate(unsigned long, void const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
+==21873==    by 0x110F48: std::allocator_traits<std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::allocate(std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >&, unsigned long) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
+==21873==    by 0x110847: std::_Vector_base<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::_M_allocate(unsigned long) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
+==21873==    by 0x11019F: void std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::_M_realloc_insert<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >(__gnu_cxx::__normal_iterator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >*, std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&&) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
+==21873==    by 0x10FAD5: void std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::emplace_back<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&&) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
+==21873==    by 0x10F297: std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::push_back(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&&) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
+==21873==    by 0x10B4CB: Command::_vectorize_cmdline(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
+==21873==    by 0x10CA27: Command::Command(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
+==21873==    by 0x10CAF0: BuiltInCommand::BuiltInCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
+==21873==    by 0x10D66C: QuitCommand::QuitCommand(char const*, JobsList*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
+==21873==    by 0x10BD6A: SmallShell::CreateCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
+==21873== 
+==21873== 56 bytes in 1 blocks are still reachable in loss record 3 of 3
+==21873==    at 0x4C3217F: operator new(unsigned long) (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==21873==    by 0x10BD50: SmallShell::CreateCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
+==21873==    by 0x10BFB8: SmallShell::executeCommand(char const*) (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
+==21873==    by 0x1122F2: main (in /home/student/homework/os-intro-hw1/skeleton_smash/smash)
+==21873== 
+==21873== LEAK SUMMARY:
+==21873==    definitely lost: 0 bytes in 0 blocks
+==21873==    indirectly lost: 0 bytes in 0 blocks
+==21873==      possibly lost: 0 bytes in 0 blocks
+==21873==    still reachable: 94 bytes in 3 blocks
+==21873==         suppressed: 0 bytes in 0 blocks
+==21873== 
+==21873== For counts of detected and suppressed errors, rerun with: -v
+==21873== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)

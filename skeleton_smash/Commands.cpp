@@ -666,19 +666,23 @@ void ExternalCommand::execute(){
       
       // char argv[COMMAND_ARGS_MAX_LENGTH*COMMAND_MAX_ARGS];
       string cmd_string = "";
-      char* cmd_name = const_cast<char*>(cmd_vec[0].c_str()); // Danger: error handling (e.g empty vec)
-      for (size_t i=0; i<cmd_vec.size(); i++){
+      string cmd_name_string = cmd_vec[0];
+      char* cmd_name = const_cast<char*>(cmd_name_string.c_str()); // Danger: error handling (e.g empty vec)
+      for (size_t i=1; i<cmd_vec.size(); i++){
         cmd_string += cmd_vec[i];
-        cmd_string += " ";
+        if (i < cmd_vec.size()-1){
+          cmd_string += " ";
+        }
       }
       cmd_string += "\0";
-      char* cmd_string_char = const_cast<char*>(cmd_string.c_str());  // Danger: conversion- string to const char* to char*
 
       args[0] = const_cast<char*>(cmd_vec[0].c_str());  // First arg - name of executable
       args[1] = const_cast<char*>(cmd_string.c_str());  // Second arg - 
 
       if(strstr(cmd_line, "*") || strstr(cmd_line, "?")) // complex external command run using bash
       {
+        cmd_string = cmd_name_string + cmd_string;  // In complex external, we need the command name in the beginning
+        char* cmd_string_char = const_cast<char*>(cmd_string.c_str());  // Danger: conversion- string to const char* to char*
         // char bash_path[] = "/bin/bash";
         char flag[] = "-c";
         char *args_bash[] = {"/bin/bash", "-c", cmd_string_char, NULL};
@@ -691,8 +695,10 @@ void ExternalCommand::execute(){
       }
       else  //simple external command run using execv syscalls
       {
+        char* cmd_string_char = const_cast<char*>(cmd_string.c_str());
+        // cout << "In simple external ";
         char *args[] = {cmd_name, cmd_string_char ,NULL}; 
-        if (execv(args[0], args) == -1) {
+        if (execvp(args[0], args) == -1) {
             perror("smash error: execv failed");
             return;
         }

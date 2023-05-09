@@ -1,1 +1,3 @@
-smash> smash> smash> hello> smash> hello> hello> hello> smash> hello> smash> smash> smash> smash> smash> smash> smash> hello> smash> hello> 
+smash> smash> smash pid is 22682
+smash> smash> smash pid is 22682
+smash> 
