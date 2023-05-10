@@ -1,8 +1,7 @@
 jobs
-sleep 2 &
+sleep 3 &
+sleep 3 &
 jobs
-sleep 1
-jobs
-sleep 2
+fg 2
 jobs
 quit

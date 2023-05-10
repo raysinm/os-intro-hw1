@@ -344,6 +344,9 @@ JobsList::JobEntry* JobsList::getLastStoppedJob(){
 }
 
 void JobsList::removeJobById(int jobId){
+  if (jobId < 1){
+    return;
+  }
   for (auto it=jobs_list.begin(); it != jobs_list.end(); it++){
     if (it->getJobId() == jobId){
       //Found the job
@@ -549,14 +552,14 @@ void FgCommand::execute(){
   
     int num_args = cmd_vec.size() - 1;
 
-    if (num_args > 1 || (num_args!=0 && isAllDigits(cmd_vec[1]))){
+    if (num_args > 1 || (num_args!=0 && !isAllDigits(cmd_vec[1]))){
       cout << "smash error: fg: invalid arguments" << endl;
       return;
     }
 
     SmallShell& smash = SmallShell::getInstance();
-    int job_id = std::stoi(cmd_vec[1]);
     JobsList::JobEntry *job = nullptr;
+    int job_id = 0;
 
     if(num_args == 0){
       job = smash.jobs_list->getLastJob();
@@ -566,6 +569,7 @@ void FgCommand::execute(){
       }
     }
     else{
+      job_id = std::stoi(cmd_vec[1]);
       job = smash.jobs_list->getJobById(job_id);
       if(job == nullptr){
         cout << "smash error: fg: job-id " << job_id << " does not exist" << endl;
