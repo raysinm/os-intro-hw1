@@ -128,32 +128,19 @@ class JobsList {
   public:
     // JobEntry() = delete;
     JobEntry() = delete;
-    JobEntry(const int& job_id, const time_t& init_time, bool& is_stopped, Command* cmd) : job_id(job_id), 
-                                      pid(cmd->pid),
-                                      init_time(init_time),
-                                      is_stopped(is_stopped),
-                                      is_background(cmd->is_bg),
-                                      is_finished(false),
-                                      cmd_vec(cmd->cmd_vec){
-                                        
-                                      }
+    JobEntry(const int& job_id, const time_t& init_time, bool& is_stopped, Command* cmd);
     ~JobEntry() = default;
+    // JobEntry(const JobEntry&) = default;
     const int& getJobId(){ return this->job_id;}
     
     const int& getJobPid(){ return this->pid;}
     
-    const int& getTimeElapsed(){
-      time_t curr_time;
-      if (time(&curr_time) < 0){
-        return -1;  //error handling
-      }
-      return (int(curr_time - init_time)); 
-    }
+    time_t getInitTime(){ return this->init_time;}
     bool isStopped(){ return this->is_stopped;}
     bool isBackground(){ return this->is_background;}
     bool isFinished(){ return this->is_finished;}
     void markFinished(){ this->is_finished = true;}
-    void continueJob(){ this->is_stopped = false;}
+    void continueJob(){ this->is_stopped = false;}  //Need to send signal
     std::vector<std::string>& getCmdVec(){ return this->cmd_vec;}
     std::string& getCmdName(){ return this->cmd_vec[0];}
   
@@ -175,9 +162,9 @@ class JobsList {
 };
 
 class JobsCommand : public BuiltInCommand {
- JobsList* jobs;
+//  JobsList* jobs;
  public:
-  JobsCommand(const char* cmd_line, JobsList* jobs);
+  JobsCommand(const char* cmd_line);
   virtual ~JobsCommand() {}
   void execute() override;
 };

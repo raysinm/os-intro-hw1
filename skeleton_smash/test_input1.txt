@@ -1,4 +1,4 @@
-sleep 2 &
+sleep 4 &
 jobs
 chprompt hello
 chprompt

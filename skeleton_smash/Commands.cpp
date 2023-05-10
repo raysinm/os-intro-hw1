@@ -200,7 +200,7 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
     return new BgCommand(cmd_line);
   }
   else if(firstWord.compare("jobs")==0){
-    return new JobsCommand(cmd_line, jobs_list);
+    return new JobsCommand(cmd_line);
   }
   else{ // Currently only external commands (notice is_bg is only for external)
     return new ExternalCommand(cmd_line);
@@ -212,10 +212,10 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
 void SmallShell::executeCommand(const char *cmd_line) {
 
   Command* cmd = CreateCommand(cmd_line);
+  this->jobs_list->removeFinishedJobs();  // Remove finished jobs
   if (cmd != nullptr){
     // cout << (*(cmd->cmd_vec))[0] << endl ;
     // cout << "Cmd pid " << cmd->pid;
-    this->jobs_list->removeFinishedJobs();  // Remove finished jobs
     cmd->execute();
     delete cmd;
   }
@@ -243,6 +243,16 @@ void SmallShell::checkJobs(){
 
 // JobsList::JobsList(): jobs_list(){}
 
+JobsList::JobEntry::JobEntry(const int& job_id, const time_t& init_time, bool& is_stopped, Command* cmd) : job_id(job_id), 
+                                      pid(cmd->pid),
+                                      init_time(init_time),
+                                      is_stopped(is_stopped),
+                                      is_background(cmd->is_bg),
+                                      is_finished(false),
+                                      cmd_vec(cmd->cmd_vec){
+                                        
+                                      }
+
 JobsList::~JobsList(){}
 
 void JobsList::addJob(Command* cmd, bool isStopped){
@@ -265,37 +275,41 @@ void JobsList::addJob(Command* cmd, bool isStopped){
     cout << "time error ";
     return; //TODO: error handling. also, should we do this time thing here or outside?
   }
-  jobs_list.push_back(JobEntry((max_job_id+1), time, isStopped, cmd));
+  JobEntry new_job = JobEntry((max_job_id+1), time, isStopped, cmd);
+  // cout << "New job id: " << new_job.getJobId();
+  this->jobs_list.push_back(new_job);
   // cout << "addJob ok ";
 }
 
 void JobsList::printJobsList(){
   // Remove finished jobs
 
-  cout << "before remove finished ";
+  // cout << "before remove finished ";
   this->removeFinishedJobs();
-  cout << "after remove finished ";
+  // cout << "after remove finished ";
   // if (jobs_list.size() == 0){
   //   return; //empty list
   // }
+  time_t time;
+  std::time(&time);
   for(auto& job : jobs_list){
     cout << "[" << job.getJobId() << "] ";
     cout << job.getCmdName() << " : ";
     cout << job.getJobPid() << " ";
-    cout << job.getTimeElapsed() << " ";
+    cout << difftime(time,job.getInitTime()) << "secs";
     if (job.isStopped()){
-      cout << "(stopped)";
+      cout << " (stopped)";
     }
     cout << endl;
-
   }
+  cout << "Finished printing jobs | ";
 }
 JobsList::JobEntry * JobsList::getJobById(int jobId){
 
   int target_id = jobId;
   auto it = std::find_if(jobs_list.begin(), jobs_list.end(), 
     [&target_id](JobsList::JobEntry& job) { return job.getJobId() == target_id; });
-  
+  cout << "Got to getjobbyID ";
   if (it != jobs_list.end()) {
     return &(*it);
   } else {
@@ -357,20 +371,24 @@ void JobsList::killAllJobs(int sig){
 
 void JobsList::removeFinishedJobs(){  
   // Checks if *non-stopped* jobs are finished
-  for (auto it=jobs_list.begin(); it != jobs_list.end(); it++){
-    int status;
-    if(it->isBackground() && waitpid(it->getJobPid(), &status, WNOHANG)!=0){
-      it->markFinished();
+  for (auto it=jobs_list.begin(); it != jobs_list.end(); ++it){
+    auto job = *it;
+    // int wait_status = ;
+    if(it->isBackground() && waitpid(it->getJobPid(), NULL, WNOHANG)!=0){
+      jobs_list.erase(it);
+      --it;
     }
   }
   
-  // Removes form list all jobs that are finished
-  for (auto it=jobs_list.begin(); it != jobs_list.end(); it++){
-    if (it->isFinished()){
-      jobs_list.erase(it);
-    }
-  }
-  return;
+  // // Removes form list all jobs that are finished
+  // for (auto it=jobs_list.begin(); it != jobs_list.end(); it++){
+  //   if (it->isFinished()){
+  //     jobs_list.erase(it);
+  //   }
+  // }
+  // jobs_list.erase(std::remove_if(jobs_list.begin(), jobs_list.end(),
+  //   [](JobEntry& job){ return job.isFinished(); }), jobs_list.end());
+
 }
 
 
@@ -426,8 +444,11 @@ ChangePromptCommand::ChangePromptCommand(const char* cmd_line) : BuiltInCommand(
 
 void ChangePromptCommand::execute(){
   
+
   int num_args = cmd_vec.size() - 1;
   SmallShell& smash = SmallShell::getInstance();
+  
+  
   // printf(*args_parsed);
   if (num_args >= 1){
     smash.set_prompt(cmd_vec[1]);
@@ -614,16 +635,19 @@ void BgCommand::execute(){
 }
 
 //jobs
-JobsCommand::JobsCommand(const char* cmd_line, JobsList* jobs): BuiltInCommand(cmd_line), jobs(jobs){
-  cout << "In JobsCommand ctor";
+JobsCommand::JobsCommand(const char* cmd_line): BuiltInCommand(cmd_line){
+  cout << "In JobsCommand ctor | ";
 }
 
 void JobsCommand::execute(){
-  cout << "in jobs ";
+  cout << "In jobs execute | ";
+
+  SmallShell& smash = SmallShell::getInstance();
+  JobsList* jobs = smash.jobs_list;
   if (jobs != nullptr){
     jobs->printJobsList();
   }
-  // cout << "jobs print ok ";
+  cout << "jobs print ok ";
 }
 
 //quit
@@ -751,6 +775,8 @@ void ExternalCommand::execute(){
       // cout << "pid after fork " << this->pid ;
       smash.jobs_list->addJob(this);
       // smash.jobs_list->printJobsList();
+      auto job = smash.jobs_list->getJobById(1);
+      cout << "new job ID: " << job->getJobId();
       cout << "add job ok after fork ";
     }
   }
