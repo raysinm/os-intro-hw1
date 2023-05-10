@@ -1,2 +1,3 @@
-smash> BEFORE getline AFTER getline Got to getjobbyID new job ID: 1add job ok after fork smash> BEFORE getline AFTER getline In JobsCommand ctor | In jobs execute | before remove finished after remove finished [1] sleep : 13685 0secs
-Finished printing jobs | jobs print ok smash> BEFORE getline AFTER getline Got to getjobbyID FROM CHPROMPT: job id = 1 | hello> BEFORE getline AFTER getline Got to getjobbyID FROM CHPROMPT: job id = 1 | smash> BEFORE getline AFTER getline 
+smash> smash> smash> [1] sleep : 17188 0 secs
+smash> smash> [1] sleep : 17188 1 secs
+smash> smash> smash> 

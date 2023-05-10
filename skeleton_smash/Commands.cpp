@@ -243,7 +243,7 @@ void SmallShell::checkJobs(){
 
 // JobsList::JobsList(): jobs_list(){}
 
-JobsList::JobEntry::JobEntry(const int& job_id, const time_t& init_time, bool& is_stopped, Command* cmd) : job_id(job_id), 
+JobsList::JobEntry::JobEntry(const int& job_id, const time_t init_time, bool& is_stopped, Command* cmd) : job_id(job_id), 
                                       pid(cmd->pid),
                                       init_time(init_time),
                                       is_stopped(is_stopped),
@@ -270,12 +270,12 @@ void JobsList::addJob(Command* cmd, bool isStopped){
   }
 
   // pid_t pid = cmd->pid; 
-  time_t time;
-  if (std::time(&time) < 0){
+  time_t time_now;
+  if (std::time(&time_now) < 0){
     cout << "time error ";
     return; //TODO: error handling. also, should we do this time thing here or outside?
   }
-  JobEntry new_job = JobEntry((max_job_id+1), time, isStopped, cmd);
+  JobEntry new_job = JobEntry((max_job_id+1), time_now, isStopped, cmd);
   // cout << "New job id: " << new_job.getJobId();
   this->jobs_list.push_back(new_job);
   // cout << "addJob ok ";
@@ -290,26 +290,28 @@ void JobsList::printJobsList(){
   // if (jobs_list.size() == 0){
   //   return; //empty list
   // }
-  time_t time;
-  std::time(&time);
+  time_t time_now;
+  std::time(&time_now);
+  // cout << "Time now " << time_now << " | ";
   for(auto& job : jobs_list){
+    // cout << "Init time for job " << job.getInitTime() << " | "; 
     cout << "[" << job.getJobId() << "] ";
     cout << job.getCmdName() << " : ";
     cout << job.getJobPid() << " ";
-    cout << difftime(time,job.getInitTime()) << "secs";
+    cout << difftime(time_now,job.getInitTime()) << " secs";
     if (job.isStopped()){
       cout << " (stopped)";
     }
     cout << endl;
   }
-  cout << "Finished printing jobs | ";
+  // cout << "Finished printing jobs | ";
 }
 JobsList::JobEntry * JobsList::getJobById(int jobId){
 
   int target_id = jobId;
   auto it = std::find_if(jobs_list.begin(), jobs_list.end(), 
     [&target_id](JobsList::JobEntry& job) { return job.getJobId() == target_id; });
-  cout << "Got to getjobbyID ";
+  // cout << "Got to getjobbyID ";
   if (it != jobs_list.end()) {
     return &(*it);
   } else {
@@ -374,9 +376,10 @@ void JobsList::removeFinishedJobs(){
   for (auto it=jobs_list.begin(); it != jobs_list.end(); ++it){
     auto job = *it;
     // int wait_status = ;
-    if(it->isBackground() && waitpid(it->getJobPid(), NULL, WNOHANG)!=0){
+    if(job.isBackground() && waitpid(job.getJobPid(), NULL, WNOHANG)!=0){
       jobs_list.erase(it);
       --it;
+      // it->markFinished()
     }
   }
   
@@ -546,14 +549,14 @@ void FgCommand::execute(){
   
     int num_args = cmd_vec.size() - 1;
 
-    if (num_args > 1 || isAllDigits(cmd_vec[1])){
+    if (num_args > 1 || (num_args!=0 && isAllDigits(cmd_vec[1]))){
       cout << "smash error: fg: invalid arguments" << endl;
       return;
     }
 
     SmallShell& smash = SmallShell::getInstance();
     int job_id = std::stoi(cmd_vec[1]);
-    JobsList::JobEntry *job;
+    JobsList::JobEntry *job = nullptr;
 
     if(num_args == 0){
       job = smash.jobs_list->getLastJob();
@@ -636,18 +639,18 @@ void BgCommand::execute(){
 
 //jobs
 JobsCommand::JobsCommand(const char* cmd_line): BuiltInCommand(cmd_line){
-  cout << "In JobsCommand ctor | ";
+  // cout << "In JobsCommand ctor | ";
 }
 
 void JobsCommand::execute(){
-  cout << "In jobs execute | ";
+  // cout << "In jobs execute | ";
 
   SmallShell& smash = SmallShell::getInstance();
   JobsList* jobs = smash.jobs_list;
   if (jobs != nullptr){
     jobs->printJobsList();
   }
-  cout << "jobs print ok ";
+  // cout << "jobs print ok ";
 }
 
 //quit
@@ -775,9 +778,9 @@ void ExternalCommand::execute(){
       // cout << "pid after fork " << this->pid ;
       smash.jobs_list->addJob(this);
       // smash.jobs_list->printJobsList();
-      auto job = smash.jobs_list->getJobById(1);
-      cout << "new job ID: " << job->getJobId();
-      cout << "add job ok after fork ";
+      // auto job = smash.jobs_list->getJobById(1);
+      // cout << "new job ID: " << job->getJobId();
+      // cout << "add job ok after fork ";
     }
   }
 }

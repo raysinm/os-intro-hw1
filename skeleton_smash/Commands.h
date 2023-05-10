@@ -128,7 +128,7 @@ class JobsList {
   public:
     // JobEntry() = delete;
     JobEntry() = delete;
-    JobEntry(const int& job_id, const time_t& init_time, bool& is_stopped, Command* cmd);
+    JobEntry(const int& job_id, const time_t init_time, bool& is_stopped, Command* cmd);
     ~JobEntry() = default;
     // JobEntry(const JobEntry&) = default;
     const int& getJobId(){ return this->job_id;}
