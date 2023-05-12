@@ -756,18 +756,19 @@ void ExternalCommand::execute(){
 PipeCommand::PipeCommand(const char* cmd_line): Command(cmd_line){}
 
 void PipeCommand::execute(){
+  SmallShell& smash = SmallShell::getInstance();
   string s = string(cmd_line);
   string pipeType = s.find("|&") == string::npos ? "|" : "|&";
   int i = s.find(pipeType);
   string command1 = s.substr(0,i-1);  //command to redirect its output (first one before | or |&)
   string command2; //command to redirect its output (one before | or |&)
   int filedes[2];
-  int pipe(filedes);
-  if(pipe == -1){
+  int* pipe(filedes);
+  if(*pipe == -1){
     perror("smash error: pipe failed");
-    if (close(filedes[0]) == -1 || close(filedes[1]) == -1) {
-      perror("smash error: close failed");
-    }
+    // if (close(filedes[0]) == -1 || close(filedes[1]) == -1) {
+    //   perror("smash error: close failed");
+    // }
     return;
   }
   pid_t pid = fork();
@@ -779,17 +780,83 @@ void PipeCommand::execute(){
         perror("smash error: setpgrp failed");
         return;
       }
+    if(close(filedes[1]) == -1){ //closing writing fd for son
+        perror("smash error: close failed");
+      }
+    int stdin_copy = dup(0); //copy of standard input file descriptor
+    if(stdin_copy == -1){
+        perror("smash error: dup failed");
+      }
+    if(dup2(filedes[0], 0) == -1) { //duplicate fd and replace standard input fd with it
+				perror("smash error: dup2 failed");
+			}
+    if(pipeType == "|&") {  //command to redirect the output to (one after | or |&)
+        command2 = s.substr(i+2, s.length());
+    }
+    else {  //redirect stdout
+        command2 = s.substr(i+1, s.length());
+    }
+    Command* cmd2 = smash.CreateCommand(command2.c_str());
+    cmd2->execute();
+    delete cmd2;
+    if(close(filedes[0]) == -1) { //TODO: add these to every error message?
+        perror("smash error: close failed");
+    }
+    if(close(stdin_copy) == -1) {
+        perror("smash error: close failed");
+    }
+    exit(0);
   }
   else{// father procces
-
-  }
-
-
-  if(pipeType == "|&") {  //command to redirect the output to (one after | or |&)
-    command2 = s.substr(i+2, s.length());
-  }
-  else {  //redirect stdout
-    command2 = s.substr(i+1, s.length());
+    if(close(filedes[0]) == -1){ //closing reading fd for father
+        perror("smash error: close failed");
+      }
+    if(pipeType == "|&") {  //redirect stderr
+        int stderr_copy = dup(2); //copy of standard error file descriptor
+			  if(stderr_copy == -1){
+				    perror("smash error: dup failed");
+			  }
+        if(dup2(filedes[1], 2) == -1){ //duplicate fd and replace standard error fd with it
+				    perror("smash error: dup2 failed");
+			  }
+        if(close(filedes[1]) == -1){ 
+				    perror("smash error: close failed");
+			  }
+        Command* cmd1 = smash.CreateCommand(command1.c_str());
+			  cmd1->execute();  
+        delete cmd1;
+        if(dup2(stderr_copy, 2) == -1){
+				    perror("smash error: dup2 failed");
+			  }
+			  if(close(stderr_copy) == -1){
+				    perror("smash error: close failed");
+			  }
+        int status;
+			  waitpid(pid, &status, WUNTRACED);
+    }
+    else {  //redirect stdout
+        int stdout_copy = dup(1); //copy of standard output file descriptor
+			  if(stdout_copy == 1){
+				    perror("smash error: dup failed");
+			  }
+        if(dup2(filedes[1], 1) == -1){ //duplicate fd and replace standard output fd with it
+				    perror("smash error: dup2 failed");
+			  }
+        if(close(filedes[1]) == -1){ //? why do we close fd?
+				    perror("smash error: close failed");
+			  }
+        Command* cmd1 = smash.CreateCommand(command1.c_str());
+			  cmd1->execute();  
+        delete cmd1;
+        if(dup2(stdout_copy, 1) == -1){
+				    perror("smash error: dup2 failed");
+			  }
+			  if(close(stdout_copy) == -1){
+				    perror("smash error: close failed");
+			  }
+        int status;
+			  waitpid(pid, &status, WUNTRACED);
+    }
   }
 }
 
