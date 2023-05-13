@@ -125,10 +125,10 @@ class JobsList {
     bool is_background;
     bool is_finished;
     std::vector<std::string> cmd_vec; 
+    std::string cmd_line;
   public:
-    // JobEntry() = delete;
     JobEntry() = delete;
-    JobEntry(const int& job_id, const time_t init_time, bool& is_stopped, Command* cmd);
+    JobEntry(const int job_id, pid_t pid, const time_t init_time, bool is_stopped, bool is_bg, std::vector<std::string> cmd_vec, std::string cmd_line);
     ~JobEntry() = default;
     // JobEntry(const JobEntry&) = default;
     const int& getJobId(){ return this->job_id;}
@@ -140,17 +140,21 @@ class JobsList {
     bool isBackground(){ return this->is_background;}
     bool isFinished(){ return this->is_finished;}
     void markFinished(){ this->is_finished = true;}
+    void stopJob(){ this->is_stopped = true;}
     void continueJob(){ this->is_stopped = false;}  //Need to send signal
     std::vector<std::string>& getCmdVec(){ return this->cmd_vec;}
     std::string& getCmdName(){ return this->cmd_vec[0];}
+    std::string& getCmdLine(){ return this->cmd_line;}
   
   };
  // TODO: Add your data members
  public:
   std::vector<JobEntry> jobs_list;
-  JobsList() = default;
+  JobEntry* fg_job;
+  JobsList();
   ~JobsList();
   void addJob(Command* cmd, bool isStopped = false);
+  void addFgJob();
   void printJobsList();
   void killAllJobs(int sig);
   void removeFinishedJobs();
@@ -234,6 +238,7 @@ class SmallShell {
   pid_t pid;
   std::string last_dir;
   JobsList* jobs_list;
+  ExternalCommand* fg_cmd;
 
 public:   // Methods
   SmallShell(SmallShell const&)      = delete; // disable copy ctor

@@ -130,7 +130,8 @@ bool isAllDigits(string& s){
 SmallShell::SmallShell() :  prompt("smash"),
                             pid(getpid()),
                             last_dir("NAN"),
-                            jobs_list(new JobsList()){
+                            jobs_list(new JobsList()),
+                            fg_cmd(nullptr){
 
   // if (jobs_list == nullptr){
   //   cout << "Problem in JobsList() ";
@@ -203,7 +204,9 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
     return new JobsCommand(cmd_line);
   }
   else{ // Currently only external commands (notice is_bg is only for external)
-    return new ExternalCommand(cmd_line);
+    ExternalCommand* ext_cmd = new ExternalCommand(cmd_line);
+    this->fg_cmd = ext_cmd;
+    return ext_cmd;
 
   }
   return nullptr;
@@ -218,6 +221,7 @@ void SmallShell::executeCommand(const char *cmd_line) {
     // cout << "Cmd pid " << cmd->pid;
     cmd->execute();
     delete cmd;
+    this->fg_cmd = nullptr;
   }
   
   return;
@@ -241,17 +245,16 @@ void SmallShell::checkJobs(){
 //----------------------------------- JobsList Class Methods  -----------------------------------//
 
 
-// JobsList::JobsList(): jobs_list(){}
+JobsList::JobsList(): jobs_list(), fg_job(nullptr){}
 
-JobsList::JobEntry::JobEntry(const int& job_id, const time_t init_time, bool& is_stopped, Command* cmd) : job_id(job_id), 
-                                      pid(cmd->pid),
+JobsList::JobEntry::JobEntry(const int job_id, pid_t pid, const time_t init_time, bool is_stopped, bool is_bg, vector<string> cmd_vec, string cmd_line) : job_id(job_id), 
+                                      pid(pid),
                                       init_time(init_time),
                                       is_stopped(is_stopped),
-                                      is_background(cmd->is_bg),
+                                      is_background(is_bg),
                                       is_finished(false),
-                                      cmd_vec(cmd->cmd_vec){
-                                        
-                                      }
+                                      cmd_vec(cmd_vec),
+                                      cmd_line(string(cmd_line)){}
 
 JobsList::~JobsList(){}
 
@@ -275,10 +278,21 @@ void JobsList::addJob(Command* cmd, bool isStopped){
     cout << "time error ";
     return; //TODO: error handling. also, should we do this time thing here or outside?
   }
-  JobEntry new_job = JobEntry((max_job_id+1), time_now, isStopped, cmd);
+  JobEntry new_job = JobEntry((max_job_id+1), cmd->pid, time_now, isStopped, cmd->is_bg, cmd->cmd_vec, string(cmd->cmd_line));
   // cout << "New job id: " << new_job.getJobId();
   this->jobs_list.push_back(new_job);
   // cout << "addJob ok ";
+}
+
+void JobsList::addFgJob(){
+  /** Useful when doing fg and then ctrlZ. need to put the job back to the list with same id! **/
+  auto it=jobs_list.begin();
+  for (; (it!=jobs_list.end()) && (it->getJobId() < fg_job->getJobId()); it++){
+    // Do nothing, just move iterator until we find plasce for the job
+  }
+  this->fg_job->stopJob();
+  jobs_list.insert(it, *fg_job);
+  this->fg_job = nullptr;
 }
 
 void JobsList::printJobsList(){
@@ -348,6 +362,7 @@ void JobsList::removeJobById(int jobId){
   for (auto it=jobs_list.begin(); it != jobs_list.end(); it++){
     if (it->getJobId() == jobId){
       //Found the job
+      this->fg_job = new JobEntry(*it);
       jobs_list.erase(it);  //shifts rest of items to fill gap
       return;
     }
@@ -566,21 +581,25 @@ void FgCommand::execute(){
       }
     }
     
-    cout << job->getCmdName() << ":" << job->getJobPid() << endl;
+    cout << job->getCmdName() << " : " << job->getJobPid() << endl;
 
+    ExternalCommand* cont_cmd = new ExternalCommand((job->getCmdLine()).c_str());  //maybe external command only?
+    cont_cmd->pid = job->getJobPid();
+    smash.fg_cmd = cont_cmd;
+  
     if(job->isStopped()){
-      if (kill(job->getJobPid(), SIGCONT) == -1) {
+      if (kill(cont_cmd->pid, SIGCONT) == -1) {
         perror("smash error: kill failed");
         return;
       }
     }
-
     int status;
     smash.jobs_list->removeJobById(job_id);
-    if (waitpid(job->getJobPid(), &status, WUNTRACED) == -1) {
+    if (waitpid(cont_cmd->pid, &status, WUNTRACED) == -1) {
       perror("smash error: waitpid failed");
-      return;
     }
+    delete cont_cmd;
+    smash.fg_cmd = nullptr;
 }
 
 
@@ -619,7 +638,7 @@ void BgCommand::execute(){
       }
     }
 
-    cout << job->getCmdName() << ":" << job->getJobPid() << endl;
+    cout << job->getCmdName() << " : " << job->getJobPid() << endl;
 
     if (kill(job->getJobPid(), SIGCONT) == -1) {
         perror("smash error: kill failed");
@@ -722,7 +741,7 @@ void ExternalCommand::execute(){
     for (size_t i=1; i<cmd_vec.size(); i++){
       cmd_string += cmd_vec[i];
       if (i < cmd_vec.size()-1){
-        cmd_string += " "
+        cmd_string += " ";
       }
     }
     cmd_string += "\0";
