@@ -722,7 +722,7 @@ void ExternalCommand::execute(){
     for (size_t i=1; i<cmd_vec.size(); i++){
       cmd_string += cmd_vec[i];
       if (i < cmd_vec.size()-1){
-        cmd_string += " ";
+        cmd_string += " "
       }
     }
     cmd_string += "\0";
