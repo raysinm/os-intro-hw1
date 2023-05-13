@@ -6,7 +6,9 @@
 #include <sys/wait.h>
 #include <iomanip>
 #include "Commands.h"
+
 #include <limits.h>
+#include <fcntl.h>
 
 #include <algorithm>
 
@@ -879,7 +881,7 @@ void PipeCommand::execute(){
     }
     else {  //redirect stdout
         int stdout_copy = dup(1); //copy of standard output file descriptor
-			  if(stdout_copy == 1){
+			  if(stdout_copy == -1){
 				    perror("smash error: dup failed");
 			  }
         if(dup2(filedes[1], 1) == -1){ //duplicate fd and replace standard output fd with it
@@ -911,17 +913,40 @@ void PipeCommand::execute(){
 RedirectionCommand::RedirectionCommand(const char* cmd_line): Command(cmd_line){}
 
 void RedirectionCommand::execute(){
+  SmallShell& smash = SmallShell::getInstance();
   string s = string(cmd_line);
   string redirectionType = s.find(">>") == string::npos ? ">" : ">>";
   int i = s.find(redirectionType);
   string command = s.substr(0,i-1);
   string output_file;
+  int fd;
+  int stdout_copy = dup(1); //copy of standard output file descriptor
+	if(stdout_copy == -1){
+			perror("smash error: dup failed");
+	}
   if(redirectionType == ">>") {  //append
     output_file = s.substr(i+2, s.length());
+    fd = open(output_file.c_str(), O_WRONLY | O_CREAT | O_APPEND, 0655);
+    if(fd == -1){
+        perror("smash error: open failed");
+    }
   }
   else {  //override
     output_file = s.substr(i+1, s.length());
+    fd = open(output_file.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0655);
+    if(fd == -1){
+        perror("smash error: open failed");
+    }
   }
+  if(dup2(fd, 1) == -1){
+      perror("smash error: dup2 failed");
+    }
+  Command* cmd = smash.CreateCommand(command.c_str());
+  cmd->execute();
+  delete cmd;
+  if(dup2(stdout_copy, 1) == -1){ //restore original stdout
+      perror("smash error: dup2 failed");
+    }
 }
 
 //----------------------------------------------------------------------------------------------//
