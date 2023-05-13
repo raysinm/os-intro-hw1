@@ -1,3 +1,7 @@
-sleep 2&
-showpid
+jobs
+sleep 3 &
+sleep 3 &
+jobs
+fg 2
+jobs
 quit
