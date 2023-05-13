@@ -612,7 +612,7 @@ void BgCommand::execute(){
 
     int num_args = cmd_vec.size() - 1;
 
-    if (num_args > 1 || isAllDigits(cmd_vec[1])){
+    if (num_args > 1 || (num_args!=0 && !isAllDigits(cmd_vec[1]))){
       cout << "smash error: bg: invalid arguments" << endl;
       return;
     }
@@ -756,8 +756,6 @@ void ExternalCommand::execute(){
     {
       cmd_string = cmd_name_string + cmd_string;  // In complex external, we need the command name in the beginning
       char* cmd_string_char = const_cast<char*>(cmd_string.c_str());  // Danger: conversion- string to const char* to char*
-      // char bash_path[] = "/bin/bash";
-      char flag[] = "-c";
       char *args_bash[] = {"/bin/bash", "-c", cmd_string_char, NULL};
 
       if (execv(args_bash[0], args_bash) == -1) {  
