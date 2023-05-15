@@ -9,6 +9,7 @@
 
 #include <limits.h>
 #include <fcntl.h>
+#include <sys/stat.h>
 
 #include <algorithm>
 
@@ -729,7 +730,7 @@ void SetcoreCommand::execute(){
   int num_args = cmd_vec.size() - 1;
 
   if (num_args != 2 || !isAllDigits(cmd_vec[1]) || !isAllDigits(cmd_vec[2])){
-      cout << "smash error: bg: invalid arguments" << endl;
+      cout << "smash error: setcore: invalid arguments" << endl;
       return;
   }
   int job_id = std::stoi(cmd_vec[1]);
@@ -763,6 +764,46 @@ void SetcoreCommand::execute(){
 GetFileTypeCommand::GetFileTypeCommand(const char* cmd_line): BuiltInCommand(cmd_line){}
 
 void GetFileTypeCommand::execute(){
+  int num_args = cmd_vec.size() - 1;
+  if (num_args != 1 || access(cmd_vec[1].c_str(), F_OK)!=0){  //Checks if file exists and can be accessed.
+    cout << "smash error: getfiletype: invalid arguments" << endl;
+    return;
+  }
+  const char* filepath = cmd_vec[1].c_str();
+
+  struct stat file_info;
+  if(stat(filepath, &file_info) != 0){
+    perror("smash error: getfiletype: ");
+  }
+
+  off_t file_size = file_info.st_size;
+  mode_t file_type = file_info.st_mode & S_IFMT;
+  string file_type_res;
+  switch (file_type){
+    case S_IFREG:
+      file_type_res = "regular file";
+      break;
+    case S_IFDIR:
+      file_type_res = "directory";
+      break;
+    case S_IFCHR:
+      file_type_res = "character device";
+      break;
+    case S_IFBLK:
+      file_type_res = "block device";
+      break;
+    case S_IFIFO:
+      file_type_res = "FIFO";
+      break;
+    case S_IFLNK:
+      file_type_res = "symbolic link";
+      break;
+    case S_IFSOCK:
+      file_type_res = "socket";
+      break;
+  }
+
+  cout << filepath << "'s type is \"" << file_type_res << "\" and takes up " << file_size << " bytes" << endl;
 
 }
 
@@ -770,6 +811,7 @@ void GetFileTypeCommand::execute(){
 ChmodCommand::ChmodCommand(const char* cmd_line): BuiltInCommand(cmd_line){}
 
 void ChmodCommand::execute(){
+  
 
 }
 
