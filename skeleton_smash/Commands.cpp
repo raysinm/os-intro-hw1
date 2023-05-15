@@ -205,6 +205,15 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
   else if(firstWord.compare("jobs")==0){
     return new JobsCommand(cmd_line);
   }
+  else if(firstWord.compare("setcore")==0){
+    return new SetcoreCommand(cmd_line);
+  }
+  else if(firstWord.compare("getfiletype")==0){
+    return new GetFileTypeCommand(cmd_line);
+  }
+  else if(firstWord.compare("chmod")==0){
+    return new ChmodCommand(cmd_line);
+  }
   else{ // Currently only external commands (notice is_bg is only for external)
     ExternalCommand* ext_cmd = new ExternalCommand(cmd_line);
     this->fg_cmd = ext_cmd;
@@ -711,8 +720,59 @@ void KillCommand::execute(){
     }
     cout << "signal number " << sig_num << " was sent to pid " << job->getJobPid() << endl;
   }
-  
 }
+
+//setcore
+SetcoreCommand::SetcoreCommand(const char* cmd_line) : BuiltInCommand(cmd_line){}
+
+void SetcoreCommand::execute(){
+  int num_args = cmd_vec.size() - 1;
+
+  if (num_args != 2 || !isAllDigits(cmd_vec[1]) || !isAllDigits(cmd_vec[2])){
+      cout << "smash error: bg: invalid arguments" << endl;
+      return;
+  }
+  int job_id = std::stoi(cmd_vec[1]);
+
+  int core_num = std::stoi(cmd_vec[2]);
+  long num_cores = sysconf(_SC_NPROCESSORS_ONLN);
+  cout<< "Num cores: " << num_cores << " ";
+  if (core_num < 0 || core_num > num_cores){
+    std::cout << "smash error: setcore: invalid core number";
+  }
+
+  SmallShell& smash = SmallShell::getInstance();
+  auto job = smash.jobs_list->getJobById(job_id);
+  if (job == nullptr){
+    std::cout << "smash error: setcore: job-id " << job_id << " does not exist" << std::endl;
+  }
+
+  // We are going to use sched_setaffinity() syscall for setting the core of the job.
+  pid_t job_pid = job->getJobPid();
+  cpu_set_t cpu_mask;
+  CPU_ZERO(&cpu_mask);
+  CPU_SET(core_num, &cpu_mask); 
+
+  if(sched_setaffinity(job_pid, sizeof(cpu_set_t), &cpu_mask) !=0){
+    perror("smash error: sched_setaffinity failed");
+  }
+}
+
+
+//getfiletype
+GetFileTypeCommand::GetFileTypeCommand(const char* cmd_line): BuiltInCommand(cmd_line){}
+
+void GetFileTypeCommand::execute(){
+
+}
+
+//chmod
+ChmodCommand::ChmodCommand(const char* cmd_line): BuiltInCommand(cmd_line){}
+
+void ChmodCommand::execute(){
+
+}
+
 
 //----------------------------------------------------------------------------------------------//
 
@@ -929,10 +989,14 @@ RedirectionCommand::RedirectionCommand(const char* cmd_line): Command(cmd_line){
 
 void RedirectionCommand::execute(){
   SmallShell& smash = SmallShell::getInstance();
+  
   string s = string(cmd_line);
+  
   string redirectionType = s.find(">>") == string::npos ? ">" : ">>";
+  
   int i = s.find(redirectionType);
-  string command = s.substr(0,i-1);
+  string command = s.substr(0,i);
+  
   string output_file;
   int fd;
   int stdout_copy = dup(1); //copy of standard output file descriptor
@@ -941,6 +1005,8 @@ void RedirectionCommand::execute(){
 	}
   if(redirectionType == ">>") {  //append
     output_file = s.substr(i+2, s.length());
+    size_t pos = output_file.find_first_not_of(' ');
+    output_file = output_file.substr(pos);
     fd = open(output_file.c_str(), O_WRONLY | O_CREAT | O_APPEND, 0655);
     if(fd == -1){
         perror("smash error: open failed");
@@ -948,6 +1014,8 @@ void RedirectionCommand::execute(){
   }
   else {  //override
     output_file = s.substr(i+1, s.length());
+    size_t pos = output_file.find_first_not_of(' ');
+    output_file = output_file.substr(pos);
     fd = open(output_file.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0655);
     if(fd == -1){
         perror("smash error: open failed");
@@ -956,12 +1024,13 @@ void RedirectionCommand::execute(){
   if(dup2(fd, 1) == -1){
       perror("smash error: dup2 failed");
     }
-  Command* cmd = smash.CreateCommand(command.c_str());
-  cmd->execute();
-  delete cmd;
+
+  smash.executeCommand(command.c_str());
+
   if(dup2(stdout_copy, 1) == -1){ //restore original stdout
       perror("smash error: dup2 failed");
     }
+  
 }
 
 //----------------------------------------------------------------------------------------------//
