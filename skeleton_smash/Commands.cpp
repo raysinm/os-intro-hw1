@@ -799,38 +799,45 @@ void ExternalCommand::execute(){
 PipeCommand::PipeCommand(const char* cmd_line): Command(cmd_line){}
 
 void PipeCommand::execute(){
+
   SmallShell& smash = SmallShell::getInstance();
+  
   string s = string(cmd_line);
+  
   string pipeType = s.find("|&") == string::npos ? "|" : "|&";
+  // cout << "pipeType is " << pipeType << " --- ";
   int i = s.find(pipeType);
-  string command1 = s.substr(0,i-1);  //command to redirect its output (first one before | or |&)
+  
+  string command1 = s.substr(0,i);  //command to redirect its output (first one before | or |&)
   string command2; //command to redirect its output (one before | or |&)
-  int filedes[2];
-  int* pipe(filedes);
-  if(*pipe == -1){
+  // cout << "command 1---" << command1 << "---";
+  int fd[2];
+  
+  // int* pipe(fd);
+  if(pipe(fd) == -1){
     perror("smash error: pipe failed");
-    // if (close(filedes[0]) == -1 || close(filedes[1]) == -1) {
+    // if (close(fd[0]) == -1 || close(fd[1]) == -1) {
     //   perror("smash error: close failed");
     // }
     return;
   }
+
   pid_t pid = fork();
+
   if(pid == -1){
     perror("smash error: fork failed");
   }
-  if(pid == 0){ // son procces
-    if (setpgrp() == -1) {
-        perror("smash error: setpgrp failed");
-        return;
-      }
-    if(close(filedes[1]) == -1){ //closing writing fd for son
+  else if(pid > 0){ // father procces
+    
+    if(close(fd[1]) == -1){ //closing writing fd for fateher
         perror("smash error: close failed");
       }
     int stdin_copy = dup(0); //copy of standard input file descriptor
+    // cout << "stdin_copy is " << stdin_copy << " --- ";
     if(stdin_copy == -1){
         perror("smash error: dup failed");
       }
-    if(dup2(filedes[0], 0) == -1) { //duplicate fd and replace standard input fd with it
+    if(dup2(fd[0], 0) == -1) { //duplicate fd and replace standard input fd with it
 				perror("smash error: dup2 failed");
 			}
     if(pipeType == "|&") {  //command to redirect the output to (one after | or |&)
@@ -839,19 +846,32 @@ void PipeCommand::execute(){
     else {  //redirect stdout
         command2 = s.substr(i+1, s.length());
     }
-    Command* cmd2 = smash.CreateCommand(command2.c_str());
-    cmd2->execute();
-    delete cmd2;
-    if(close(filedes[0]) == -1) { //TODO: add these to every error message?
+    
+    // cout << "command 2---" << command2 << "---";
+    // FIRST, we wait for the child process to finish executing command1 (so we can be sure output is written to channel)
+    int status;
+		waitpid(pid, &status, WUNTRACED);
+    // cout << " fd[0] =  " << fd[0] << " stdin_copy = " << stdin_copy;
+    // cout << "CMD 2 is " << command2 << " --- ";
+    smash.executeCommand(command2.c_str());
+
+    if(close(fd[0]) == -1) { //TODO: add these to every error message?
         perror("smash error: close failed");
     }
+    if(dup2(stdin_copy, 0) == -1){ // Restoring stdin fd
+				    perror("smash error: dup2 failed");
+		}
+
     if(close(stdin_copy) == -1) {
         perror("smash error: close failed");
     }
-    exit(0);
   }
-  else{// father procces
-    if(close(filedes[0]) == -1){ //closing reading fd for father
+  else{ // son procces
+    if (setpgrp() == -1) {
+          perror("smash error: setpgrp failed");
+          return;
+        }
+    if(close(fd[0]) == -1){ //closing reading fd for son
         perror("smash error: close failed");
       }
     if(pipeType == "|&") {  //redirect stderr
@@ -859,47 +879,44 @@ void PipeCommand::execute(){
 			  if(stderr_copy == -1){
 				    perror("smash error: dup failed");
 			  }
-        if(dup2(filedes[1], 2) == -1){ //duplicate fd and replace standard error fd with it
+        if(dup2(fd[1], 2) == -1){ //duplicate fd and replace standard error fd with it
 				    perror("smash error: dup2 failed");
 			  }
-        if(close(filedes[1]) == -1){ 
+        
+        smash.executeCommand(command1.c_str());
+
+        if(close(fd[1]) == -1){ 
 				    perror("smash error: close failed");
 			  }
-        Command* cmd1 = smash.CreateCommand(command1.c_str());
-			  cmd1->execute();  
-        delete cmd1;
-        if(dup2(stderr_copy, 2) == -1){
+        if(dup2(stderr_copy, 2) == -1){ // Restoring stderr fd
 				    perror("smash error: dup2 failed");
 			  }
 			  if(close(stderr_copy) == -1){
 				    perror("smash error: close failed");
 			  }
-        int status;
-			  waitpid(pid, &status, WUNTRACED);
     }
     else {  //redirect stdout
         int stdout_copy = dup(1); //copy of standard output file descriptor
 			  if(stdout_copy == -1){
 				    perror("smash error: dup failed");
 			  }
-        if(dup2(filedes[1], 1) == -1){ //duplicate fd and replace standard output fd with it
+        if(dup2(fd[1], 1) == -1){ //duplicate fd and replace standard output fd with it
 				    perror("smash error: dup2 failed");
 			  }
-        if(close(filedes[1]) == -1){ //? why do we close fd?
+        // cout << "fd[1] = " << fd[1] << " stdout_copy = " << stdout_copy;
+        smash.executeCommand(command1.c_str());
+
+        if(close(fd[1]) == -1){ //? why do we close fd? -because we already duplicated it to stdout fd (2)
 				    perror("smash error: close failed");
 			  }
-        Command* cmd1 = smash.CreateCommand(command1.c_str());
-			  cmd1->execute();  
-        delete cmd1;
-        if(dup2(stdout_copy, 1) == -1){
+        if(dup2(stdout_copy, 1) == -1){ // Restoring stdout fd
 				    perror("smash error: dup2 failed");
 			  }
 			  if(close(stdout_copy) == -1){
 				    perror("smash error: close failed");
 			  }
-        int status;
-			  waitpid(pid, &status, WUNTRACED);
     }
+    exit(0);
   }
 }
 
