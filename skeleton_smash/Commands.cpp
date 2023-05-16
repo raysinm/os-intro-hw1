@@ -448,9 +448,7 @@ Command::Command(const char* orig_cmd_line): cmd_line_str(string(orig_cmd_line))
 }
 
 Command::~Command(){
-  // if (this->cmd_line != nullptr){
-  //   delete[] this->cmd_line;
-  // }
+
 }
 
 //----------------------------------- BuiltInCommand Class Methods  -----------------------------------//
@@ -496,7 +494,6 @@ void GetCurrDirCommand::execute(){
       return; //error handling
     }
     if(getCurrDir(buf) != 0){
-      // cout << "smash error: getcwd failed" << endl;  //Did it inside getCurrDir
       free(buf);
       return;
     }
@@ -523,9 +520,6 @@ void ChangeDirCommand::execute(){
     const char* path = cmd_vec[1].c_str();
 
     char* buf = new char[PATH_MAX];
-    if (buf == nullptr){  //TODO: error handling
-    return; //TODO: Maybe assert?
-    } 
 
     if (strcmp(path, "-") == 0){
       if(smash.last_dir == "NAN"){
@@ -536,12 +530,11 @@ void ChangeDirCommand::execute(){
       else{
         smash.setLastDir();
         delete[] buf;
-        return; //added because else it changes last dir to cur dir twice causing problems
+        return; 
       }
     }
     else{
       if(getCurrDir(buf) != 0){
-        //  << "smash error: getcwd failed" << endl;
         delete[] buf;
         return;
       }  
@@ -594,7 +587,7 @@ void FgCommand::execute(){
     cout << job->getCmdLine() << " : " << job->getJobPid() << endl;
 
 
-    ExternalCommand* cont_cmd = new ExternalCommand((job->getCmdLine(true)).c_str());  //maybe external command only?
+    ExternalCommand* cont_cmd = new ExternalCommand((job->getCmdLine(true)).c_str());  
     cont_cmd->pid = job->getJobPid();
     smash.fg_cmd = cont_cmd;
   
@@ -682,17 +675,11 @@ QuitCommand::QuitCommand(const char* cmd_line, JobsList* jobs) : BuiltInCommand(
 
 
 void QuitCommand::execute(){
-  // cout << "Got to quit execute ";
-
   if (cmd_vec.size()>1 && cmd_vec[1] == "kill"){
     cout << "smash: sending SIGKILL signal to " << jobs->jobs_list.size() << " jobs:" << endl;
     jobs->killAllJobs(SIGKILL);
   }
-  // for(auto job : jobs->jobs_list){
-  //     // cout << " Job # " << job.getJobId() << endl;
-  //     kill(job.getJobPid(), SIGKILL);
-  // }
-  // atexit(cleanup); //Maybe we should destroy everything on the way out
+
   exit(0);
 }
 
@@ -790,6 +777,7 @@ void GetFileTypeCommand::execute(){
   struct stat file_info;
   if(lstat(filepath, &file_info) != 0){
     perror("smash error: lstat failed");
+    return;
   }
 
   off_t file_size = file_info.st_size;
@@ -817,6 +805,8 @@ void GetFileTypeCommand::execute(){
     case S_IFSOCK:
       file_type_res = "socket";
       break;
+    default:
+      break;
   }
 
   cout << filepath << "'s type is \"" << file_type_res << "\" and takes up " << file_size << " bytes" << endl;
@@ -828,7 +818,7 @@ ChmodCommand::ChmodCommand(const char* cmd_line): BuiltInCommand(cmd_line){}
 
 void ChmodCommand::execute(){
   int num_args = cmd_vec.size() - 1;
-  if (num_args != 2 || access(cmd_vec[2].c_str(), F_OK)!=0 || !isAllDigits(cmd_vec[1]) || cmd_vec[1].size() < 3 || cmd_vec[1].size() > 4){  //Checks if file exists and can be accessed, and if new_mode is digits
+  if (num_args != 2 || access(cmd_vec[2].c_str(), F_OK)!=0 || !isAllDigits(cmd_vec[1]) || cmd_vec[1].size() > 4){  //Checks if file exists and can be accessed, and if new_mode is digits
     cerr << "smash error: chmod: invalid arguments" << endl;
     return;
   }
@@ -853,24 +843,22 @@ ExternalCommand::ExternalCommand(const char* cmd_line): Command(cmd_line){}
 void ExternalCommand::execute(){
   SmallShell& smash = SmallShell::getInstance();
 
-  // cout << "pid before fork " << this->pid << " || ";
-  pid_t pid = fork(); // danger: error handling ?
-  this->pid = pid;  
-  if(pid == 0) // son procces
+  pid_t pid = fork(); 
+  this->pid = pid;
+  if (pid < 0 ){
+    perror("smash error: fork failed");
+    return;
+  }  
+  else if(pid == 0) // son procces
   {
     if (setpgrp() == -1) {
       perror("smash error: setpgrp failed");
       return;
     }
-    // string trimmed_cmd_line = _trim(string(cmd_line));  //! danger: Doesnt trim inside spaces
-    // char cmd_line_array[COMMAND_ARGS_MAX_LENGTH]; //It's not an array, its a char*
-    // strcpy(cmd_line_array, trimmed_cmd_line.c_str()); 
-    
-    // char argv[COMMAND_ARGS_MAX_LENGTH*COMMAND_MAX_ARGS];
+
     string cmd_string = "";
     char *argv[COMMAND_MAX_ARGS+2];
     string cmd_name_string = cmd_vec[0];
-    // char* cmd_name = const_cast<char*>(cmd_name_string.c_str()); // Danger: error handling (e.g empty vec)
     for (size_t i=0; i<cmd_vec.size(); ++i){
       cmd_string += cmd_vec[i];
       if (i < cmd_vec.size()-1){
@@ -880,11 +868,8 @@ void ExternalCommand::execute(){
     }
     argv[cmd_vec.size()] = NULL;
 
-    // cout << "cmd_string:" << cmd_string << "." << endl;
-
     if(strstr(cmd_line, "*") || strstr(cmd_line, "?")) // complex external command run using bash
     {
-      // cmd_string = cmd_name_string + " " + cmd_string;  // In complex external, we need the command name in the beginning
       char* cmd_string_char = const_cast<char*>(cmd_string.c_str());  // Danger: conversion- string to const char* to char*
       char exec[] = "/bin/bash";
       char c_flag[] = "-c";
@@ -898,13 +883,7 @@ void ExternalCommand::execute(){
     }
     else  //simple external command run using execv syscalls
     {
-      // char* cmd_string_char = const_cast<char*>(cmd_string.c_str());
-      // char *args[3];
-      // args[0] = cmd_name;
-      // args[1] = (cmd_vec.size()-1) != 0 ? argv : NULL;  //if cmd_string is empty pass NULL
-      // args[2] = NULL; 
-      
-      
+
       if (execvp(argv[0], argv) == -1) {
           perror("smash error: execv failed");
           return;
@@ -951,18 +930,12 @@ void PipeCommand::execute(){
     else {  //redirect stdout
         command2 = s.substr(i+1);
     }
-
-  // cout << "command1:" << command1 << "." << endl;
-  // cout << "command2:" << command2 << "." << endl;
   
   int fd[2];
   
   // int* pipe(fd);
   if(pipe(fd) == -1){
     perror("smash error: pipe failed");
-    // if (close(fd[0]) == -1 || close(fd[1]) == -1) {
-    //   perror("smash error: close failed");
-    // }
     return;
   }
 
@@ -995,16 +968,19 @@ void PipeCommand::execute(){
     
     // FIRST, we wait for the child process to finish executing command1 (so we can be sure output is written to channel)
 
-    if(close(fd[0]) == -1) { //TODO: add these to every error message?
+    if(close(fd[0]) == -1) { 
         perror("smash error: close failed");
+        return;
     }
     smash.executeCommand(command2.c_str());
     if(dup2(stdin_copy, 0) == -1){ // Restoring stdin fd
-				    perror("smash error: dup2 failed");
+      perror("smash error: dup2 failed");
+      return;      
 		}
 
     if(close(stdin_copy) == -1) {
         perror("smash error: close failed");
+        return; 
     }
   }
   else{ // son procces
@@ -1014,6 +990,7 @@ void PipeCommand::execute(){
         }
     if(close(fd[0]) == -1){ //closing reading fd for son
         perror("smash error: close failed");
+        return; 
       }
     if(pipeType == "|&") {  //redirect stderr
         int stderr_copy = dup(2); //copy of standard error file descriptor
@@ -1081,7 +1058,6 @@ void RedirectionCommand::execute(){
   
   int i = s.find(redirectionType);
   string command = s.substr(0,i);
-  // cout << "command:" << command << "." << endl;
   string output_file;
   int fd;
   int stdout_copy = dup(1); //copy of standard output file descriptor
@@ -1093,7 +1069,6 @@ void RedirectionCommand::execute(){
     output_file = s.substr(i+2);
     size_t pos = output_file.find_first_not_of(' ');
     output_file = output_file.substr(pos);
-    // cout << "output_file:" << output_file <<"."<<endl;
     fd = open(output_file.c_str(), O_WRONLY | O_CREAT | O_APPEND, 0655);
     if(fd == -1){
         perror("smash error: open failed");
@@ -1104,7 +1079,6 @@ void RedirectionCommand::execute(){
     output_file = s.substr(i+1);
     size_t pos = output_file.find_first_not_of(' ');
     output_file = output_file.substr(pos);
-    // cout << "output_file:" << output_file <<"."<<endl;
     
     fd = open(output_file.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0655);
     if(fd == -1){

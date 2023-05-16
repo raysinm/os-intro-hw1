@@ -20,7 +20,6 @@ class Command {
   char* cmd_line;
   std::string cmd_line_str;
   pid_t pid;
-  // std::string cmd_name;
   std::vector<std::string> cmd_vec;
   bool is_bg;
  public:  // Methods
@@ -28,17 +27,12 @@ class Command {
   virtual ~Command();
   virtual void execute() = 0;
   void _vectorize_cmdline(const char* cmd_line);
-  //virtual void prepare();
-  //virtual void cleanup();
-  // TODO: Add your extra methods if needed
-
 };
 
 class BuiltInCommand : public Command {
  public:
   BuiltInCommand(const char* cmd_line);
   virtual ~BuiltInCommand() {}
-  // virtual void execute() override;
 };
 
 class ExternalCommand : public Command {
@@ -49,7 +43,6 @@ class ExternalCommand : public Command {
 };
 
 class PipeCommand : public Command {
-  // TODO: Add your data members
  public:
   PipeCommand(const char* cmd_line);
   virtual ~PipeCommand() {}
@@ -57,13 +50,10 @@ class PipeCommand : public Command {
 };
 
 class RedirectionCommand : public Command {
- // TODO: Add your data members
  public:
   explicit RedirectionCommand(const char* cmd_line);
   virtual ~RedirectionCommand() {}
   void execute() override;
-  //void prepare() override;
-  //void cleanup() override;
 };
 
 class ChangeDirCommand : public BuiltInCommand {
@@ -136,7 +126,6 @@ class JobsList {
     JobEntry() = delete;
     JobEntry(const int job_id, pid_t pid, const time_t init_time, bool is_stopped, bool is_bg, std::vector<std::string> cmd_vec, std::string cmd_line);
     ~JobEntry() = default;
-    // JobEntry(const JobEntry&) = default;
     const int& getJobId(){ return this->job_id;}
     
     const int& getJobPid(){ return this->pid;}
@@ -148,7 +137,7 @@ class JobsList {
     bool isFinished(){ return this->is_finished;}
     void markFinished(){ this->is_finished = true;}
     void stopJob(){ this->is_stopped = true;}
-    void continueJob(){ this->is_stopped = false;}  //Need to send signal
+    void continueJob(){ this->is_stopped = false;}  
     std::vector<std::string>& getCmdVec(){ return this->cmd_vec;}
     std::string& getCmdName(){ return this->cmd_vec[0];}
     std::string& getCmdLine(bool no_bg=false){
@@ -159,7 +148,6 @@ class JobsList {
     }
   
   };
- // TODO: Add your data members
  public:
   std::vector<JobEntry> jobs_list;
   JobEntry* fg_job;
@@ -174,11 +162,9 @@ class JobsList {
   void removeJobById(int jobId);
   JobEntry * getLastJob();
   JobEntry *getLastStoppedJob();
-  // TODO: Add extra methods or modify exisitng ones as needed
 };
 
 class JobsCommand : public BuiltInCommand {
-//  JobsList* jobs;
  public:
   JobsCommand(const char* cmd_line);
   virtual ~JobsCommand() {}
@@ -186,7 +172,6 @@ class JobsCommand : public BuiltInCommand {
 };
 
 class ForegroundCommand : public BuiltInCommand {
- // TODO: Add your data members
  public:
   ForegroundCommand(const char* cmd_line, JobsList* jobs);
   virtual ~ForegroundCommand() {}
@@ -194,7 +179,6 @@ class ForegroundCommand : public BuiltInCommand {
 };
 
 class BackgroundCommand : public BuiltInCommand {
- // TODO: Add your data members
  public:
   BackgroundCommand(const char* cmd_line, JobsList* jobs);
   virtual ~BackgroundCommand() {}
@@ -211,7 +195,6 @@ class TimeoutCommand : public BuiltInCommand {
 };
 
 class ChmodCommand : public BuiltInCommand {
-  // TODO: Add your data members
  public:
   ChmodCommand(const char* cmd_line);
   virtual ~ChmodCommand() {}
@@ -219,7 +202,6 @@ class ChmodCommand : public BuiltInCommand {
 };
 
 class GetFileTypeCommand : public BuiltInCommand {
-  // TODO: Add your data members
  public:
   GetFileTypeCommand(const char* cmd_line);
   virtual ~GetFileTypeCommand() {}
@@ -227,7 +209,6 @@ class GetFileTypeCommand : public BuiltInCommand {
 };
 
 class SetcoreCommand : public BuiltInCommand {
-  // TODO: Add your data members
  public:
   SetcoreCommand(const char* cmd_line);
   virtual ~SetcoreCommand() {}

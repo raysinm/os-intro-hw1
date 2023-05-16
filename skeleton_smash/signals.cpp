@@ -12,9 +12,7 @@ void ctrlZHandler(int sig_num) {
   if (smash.fg_cmd==nullptr){
     return;
   }
-  // cout << "DEBUG: fg_-cmd pid: " << smash.fg_cmd->pid;
-  
-  if(kill(smash.fg_cmd->pid, SIGSTOP)!=0){ //error handling?
+  if(kill(smash.fg_cmd->pid, SIGSTOP)!=0){ //error handling
     cout << "smash: kill failed";
   }
   if (smash.jobs_list->fg_job != nullptr){
@@ -23,6 +21,7 @@ void ctrlZHandler(int sig_num) {
     smash.jobs_list->addJob(smash.fg_cmd, true);
   }
   cout << "smash: process " << smash.fg_cmd->pid << " was stopped" << endl;
+
 }
 
 void ctrlCHandler(int sig_num) {
@@ -32,12 +31,11 @@ void ctrlCHandler(int sig_num) {
   if (smash.fg_cmd==nullptr){
     return;
   }
-  // cout << "DEBUG: fg_-cmd pid: " << smash.fg_cmd->pid;
-  if(kill(smash.fg_cmd->pid, SIGKILL)!=0){ //error handling?
+
+  if(kill(smash.fg_cmd->pid, SIGKILL)!=0){ //error handling
     cout << "smash: kill error in C handler";
   }
   cout << "smash: process " << smash.fg_cmd->pid << " was killed" << endl;
-  // delete smash.fg_cmd;  //SHOULD WE DELETE IT?
   smash.fg_cmd = nullptr;
 }
 
