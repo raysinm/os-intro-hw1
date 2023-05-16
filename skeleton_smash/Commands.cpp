@@ -861,17 +861,19 @@ void ExternalCommand::execute(){
         cmd_string += " ";
       }
     }
-    cmd_string += "\0";
+    // cout << "args:" << cmd_string << "." <<endl;
+    // cmd_string += "\0";
+  
 
-    // char *args[2];
-    // args[0] = const_cast<char*>(cmd_vec[0].c_str());  // First arg - name of executable
-    // args[1] = const_cast<char*>(cmd_string.c_str());  // Second arg - 
+
 
     if(strstr(cmd_line, "*") || strstr(cmd_line, "?")) // complex external command run using bash
     {
       cmd_string = cmd_name_string + cmd_string;  // In complex external, we need the command name in the beginning
       char* cmd_string_char = const_cast<char*>(cmd_string.c_str());  // Danger: conversion- string to const char* to char*
-      char *args_bash[] = {"/bin/bash", "-c", cmd_string_char, NULL};
+      char exec[] = "/bin/bash";
+      char c_flag[] = "-c";
+      char *args_bash[] = {exec, c_flag, cmd_string_char, NULL};
 
       if (execv(args_bash[0], args_bash) == -1) {  
           perror("smash error: execv failed");
@@ -925,6 +927,15 @@ void PipeCommand::execute(){
   
   string command1 = s.substr(0,i);  //command to redirect its output (first one before | or |&)
   string command2; //command to redirect its output (one before | or |&)
+  if(pipeType == "|&") {  //command to redirect the output to (one after | or |&)
+        command2 = s.substr(i+2, s.length());
+    }
+    else {  //redirect stdout
+        command2 = s.substr(i+1, s.length());
+    }
+
+  // cout << "command1:" << command1 << "." << endl;
+  // cout << "command2:" << command2 << "." << endl;
   
   int fd[2];
   
@@ -941,35 +952,35 @@ void PipeCommand::execute(){
 
   if(pid == -1){
     perror("smash error: fork failed");
+    return;
   }
   else if(pid > 0){ // father procces
     
     if(close(fd[1]) == -1){ //closing writing fd for fateher
         perror("smash error: close failed");
+        return;
       }
+    int status;
+		waitpid(pid, &status, WUNTRACED);
+
     int stdin_copy = dup(0); //copy of standard input file descriptor
 
     if(stdin_copy == -1){
         perror("smash error: dup failed");
+        return;
       }
     if(dup2(fd[0], 0) == -1) { //duplicate fd and replace standard input fd with it
 				perror("smash error: dup2 failed");
+        return;
 			}
-    if(pipeType == "|&") {  //command to redirect the output to (one after | or |&)
-        command2 = s.substr(i+2, s.length());
-    }
-    else {  //redirect stdout
-        command2 = s.substr(i+1, s.length());
-    }
+    
     
     // FIRST, we wait for the child process to finish executing command1 (so we can be sure output is written to channel)
-    int status;
-		waitpid(pid, &status, WUNTRACED);
-    smash.executeCommand(command2.c_str());
 
     if(close(fd[0]) == -1) { //TODO: add these to every error message?
         perror("smash error: close failed");
     }
+    smash.executeCommand(command2.c_str());
     if(dup2(stdin_copy, 0) == -1){ // Restoring stdin fd
 				    perror("smash error: dup2 failed");
 		}
@@ -990,21 +1001,26 @@ void PipeCommand::execute(){
         int stderr_copy = dup(2); //copy of standard error file descriptor
 			  if(stderr_copy == -1){
 				    perror("smash error: dup failed");
+            return;
 			  }
         if(dup2(fd[1], 2) == -1){ //duplicate fd and replace standard error fd with it
 				    perror("smash error: dup2 failed");
+            return;
+			  }
+        if(close(fd[1]) == -1){ 
+				    perror("smash error: close failed");
+            return;
 			  }
         
         smash.executeCommand(command1.c_str());
 
-        if(close(fd[1]) == -1){ 
-				    perror("smash error: close failed");
-			  }
         if(dup2(stderr_copy, 2) == -1){ // Restoring stderr fd
 				    perror("smash error: dup2 failed");
+            return;
 			  }
 			  if(close(stderr_copy) == -1){
 				    perror("smash error: close failed");
+            return;
 			  }
     }
     else {  //redirect stdout
