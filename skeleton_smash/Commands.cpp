@@ -528,6 +528,8 @@ void ChangeDirCommand::execute(){
       }
       else{
         smash.setLastDir();
+        delete[] buf;
+        return; //added because else it changes last dir to cur dir twice causing problems
       }
     }
     else{
@@ -542,10 +544,9 @@ void ChangeDirCommand::execute(){
         return;
       }
     }
-
     smash.last_dir = string(buf);
     delete[] buf;
-    
+  
     return;
 }
 
