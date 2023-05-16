@@ -534,6 +534,8 @@ void ChangeDirCommand::execute(){
       }
       else{
         smash.setLastDir();
+        delete[] buf;
+        return; //added because else it changes last dir to cur dir twice causing problems
       }
     }
     else{
@@ -711,11 +713,13 @@ void KillCommand::execute(){
   if (job == nullptr){
     // job not found
     cerr << "smash error: kill: job-id " << job_id << " does not exist" << std::endl;
+    return;
   }
   else{
     int sig_num = std::stoi(sig.substr(1));
     if (kill(job->getJobPid(), sig_num) != 0){
       perror("smash error: kill failed");
+      return;
     }
     cout << "signal number " << sig_num << " was sent to pid " << job->getJobPid() << endl;
   }
