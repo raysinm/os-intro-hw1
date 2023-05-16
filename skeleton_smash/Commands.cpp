@@ -435,7 +435,7 @@ Command::Command(const char* orig_cmd_line): cmd_line_str(string(orig_cmd_line))
                                              cmd_vec(), is_bg(false){
   
 
-  this->cmd_line = new char[strlen(orig_cmd_line)];
+  this->cmd_line = new char[strlen(orig_cmd_line)+1];
   strcpy(this->cmd_line, orig_cmd_line);
   if(_isBackgroundComamnd(orig_cmd_line)){
     _removeBackgroundSign(this->cmd_line);
@@ -448,7 +448,9 @@ Command::Command(const char* orig_cmd_line): cmd_line_str(string(orig_cmd_line))
 }
 
 Command::~Command(){
-
+  if(this->cmd_line != nullptr){
+    delete[] cmd_line;
+  }
 }
 
 //----------------------------------- BuiltInCommand Class Methods  -----------------------------------//
