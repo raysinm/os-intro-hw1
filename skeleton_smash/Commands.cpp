@@ -236,6 +236,7 @@ void SmallShell::executeCommand(const char *cmd_line) {
     // for (auto& elm : cmd->cmd_vec){
     //   cout << elm << " | ";
     // }
+    // cout << "DEBUG: current command:" << cmd->cmd_line_str << "." <<endl;
     cmd->execute();
     delete cmd;
     this->fg_cmd = nullptr;
@@ -320,7 +321,7 @@ void JobsList::addFgJob(){
   this->fg_job->stopJob();
 
   jobs_list.insert(it, *fg_job);
-  // this->fg_job = nullptr;
+  this->fg_job = nullptr;
 }
 
 void JobsList::printJobsList(){
@@ -413,7 +414,7 @@ void JobsList::removeFinishedJobs(){
   // Checks if *non-stopped* jobs are finished
   for (auto it=jobs_list.begin(); it != jobs_list.end(); ++it){
     auto job = *it;
-    if(job.isBackground() && waitpid(job.getJobPid(), NULL, WNOHANG)!=0){
+    if(job.isFinished() || (job.isBackground() && waitpid(job.getJobPid(), NULL, WNOHANG)!=0)){
       jobs_list.erase(it);
       --it;
     }
@@ -704,9 +705,14 @@ void KillCommand::execute(){
     cerr << "smash error: kill: invalid arguments" << endl;
     return; //error handling
   }
-  string job_id = cmd_vec[2];
-  string& sig = cmd_vec[1];  //TODO: check format!!
+
+  string sig = cmd_vec[1].substr(1);
   
+  if (!isAllDigits(sig)){
+    cerr << "smash error: kill: invalid arguments" << endl;
+    return; //error handling
+  }
+  string job_id = cmd_vec[2];
   
   auto job = jobs->getJobById(std::stoi(job_id));
   if (job == nullptr){
@@ -715,10 +721,19 @@ void KillCommand::execute(){
     return;
   }
   else{
-    int sig_num = std::stoi(sig.substr(1));
+    int sig_num = std::stoi(sig);
     if (kill(job->getJobPid(), sig_num) != 0){
       perror("smash error: kill failed");
       return;
+    }
+    if (sig_num == SIGKILL){
+      job->markFinished();
+    }
+    if (sig_num == SIGSTOP){
+      job->stopJob();
+    }
+    if(job->isStopped() && sig_num == SIGCONT){
+      job->continueJob();
     }
     cout << "signal number " << sig_num << " was sent to pid " << job->getJobPid() << endl;
   }
@@ -853,25 +868,27 @@ void ExternalCommand::execute(){
     
     // char argv[COMMAND_ARGS_MAX_LENGTH*COMMAND_MAX_ARGS];
     string cmd_string = "";
+    char *argv[COMMAND_MAX_ARGS+2];
     string cmd_name_string = cmd_vec[0];
-    char* cmd_name = const_cast<char*>(cmd_name_string.c_str()); // Danger: error handling (e.g empty vec)
-    for (size_t i=1; i<cmd_vec.size(); i++){
+    // char* cmd_name = const_cast<char*>(cmd_name_string.c_str()); // Danger: error handling (e.g empty vec)
+    for (size_t i=0; i<cmd_vec.size(); ++i){
       cmd_string += cmd_vec[i];
       if (i < cmd_vec.size()-1){
         cmd_string += " ";
       }
+      argv[i] = const_cast<char*>(cmd_vec[i].c_str());
     }
-    cmd_string += "\0";
+    argv[cmd_vec.size()] = NULL;
 
-    // char *args[2];
-    // args[0] = const_cast<char*>(cmd_vec[0].c_str());  // First arg - name of executable
-    // args[1] = const_cast<char*>(cmd_string.c_str());  // Second arg - 
+    // cout << "cmd_string:" << cmd_string << "." << endl;
 
     if(strstr(cmd_line, "*") || strstr(cmd_line, "?")) // complex external command run using bash
     {
-      cmd_string = cmd_name_string + cmd_string;  // In complex external, we need the command name in the beginning
+      // cmd_string = cmd_name_string + " " + cmd_string;  // In complex external, we need the command name in the beginning
       char* cmd_string_char = const_cast<char*>(cmd_string.c_str());  // Danger: conversion- string to const char* to char*
-      char *args_bash[] = {"/bin/bash", "-c", cmd_string_char, NULL};
+      char exec[] = "/bin/bash";
+      char c_flag[] = "-c";
+      char *args_bash[] = {exec, c_flag, cmd_string_char, NULL};
 
       if (execv(args_bash[0], args_bash) == -1) {  
           perror("smash error: execv failed");
@@ -881,10 +898,14 @@ void ExternalCommand::execute(){
     }
     else  //simple external command run using execv syscalls
     {
-      char* cmd_string_char = const_cast<char*>(cmd_string.c_str());
-      // cout << "In simple external ";
-      char *args[] = {cmd_name, cmd_string_char ,NULL}; 
-      if (execvp(args[0], args) == -1) {
+      // char* cmd_string_char = const_cast<char*>(cmd_string.c_str());
+      // char *args[3];
+      // args[0] = cmd_name;
+      // args[1] = (cmd_vec.size()-1) != 0 ? argv : NULL;  //if cmd_string is empty pass NULL
+      // args[2] = NULL; 
+      
+      
+      if (execvp(argv[0], argv) == -1) {
           perror("smash error: execv failed");
           return;
       }
@@ -893,16 +914,15 @@ void ExternalCommand::execute(){
   else // father procces
   {
     if(!this->is_bg){
+      smash.fg_cmd->pid = this->pid;
       int status;
       if(waitpid(pid, &status, WUNTRACED) == -1){
-      perror("smash error: waitpid failed");
+        perror("smash error: waitpid failed");
+        return;
       }
     }
-    else{
-      // cout << "pid after fork " << this->pid ;
+    else{ // background command
       smash.jobs_list->addJob(this);
-      // smash.jobs_list->printJobsList();
-
     }
   }
 }
@@ -925,6 +945,15 @@ void PipeCommand::execute(){
   
   string command1 = s.substr(0,i);  //command to redirect its output (first one before | or |&)
   string command2; //command to redirect its output (one before | or |&)
+  if(pipeType == "|&") {  //command to redirect the output to (one after | or |&)
+        command2 = s.substr(i+2);
+    }
+    else {  //redirect stdout
+        command2 = s.substr(i+1);
+    }
+
+  // cout << "command1:" << command1 << "." << endl;
+  // cout << "command2:" << command2 << "." << endl;
   
   int fd[2];
   
@@ -941,35 +970,35 @@ void PipeCommand::execute(){
 
   if(pid == -1){
     perror("smash error: fork failed");
+    return;
   }
   else if(pid > 0){ // father procces
     
     if(close(fd[1]) == -1){ //closing writing fd for fateher
         perror("smash error: close failed");
+        return;
       }
+    int status;
+		waitpid(pid, &status, WUNTRACED);
+
     int stdin_copy = dup(0); //copy of standard input file descriptor
 
     if(stdin_copy == -1){
         perror("smash error: dup failed");
+        return;
       }
     if(dup2(fd[0], 0) == -1) { //duplicate fd and replace standard input fd with it
 				perror("smash error: dup2 failed");
+        return;
 			}
-    if(pipeType == "|&") {  //command to redirect the output to (one after | or |&)
-        command2 = s.substr(i+2, s.length());
-    }
-    else {  //redirect stdout
-        command2 = s.substr(i+1, s.length());
-    }
+    
     
     // FIRST, we wait for the child process to finish executing command1 (so we can be sure output is written to channel)
-    int status;
-		waitpid(pid, &status, WUNTRACED);
-    smash.executeCommand(command2.c_str());
 
     if(close(fd[0]) == -1) { //TODO: add these to every error message?
         perror("smash error: close failed");
     }
+    smash.executeCommand(command2.c_str());
     if(dup2(stdin_copy, 0) == -1){ // Restoring stdin fd
 				    perror("smash error: dup2 failed");
 		}
@@ -990,21 +1019,26 @@ void PipeCommand::execute(){
         int stderr_copy = dup(2); //copy of standard error file descriptor
 			  if(stderr_copy == -1){
 				    perror("smash error: dup failed");
+            return;
 			  }
         if(dup2(fd[1], 2) == -1){ //duplicate fd and replace standard error fd with it
 				    perror("smash error: dup2 failed");
+            return;
+			  }
+        if(close(fd[1]) == -1){ 
+				    perror("smash error: close failed");
+            return;
 			  }
         
         smash.executeCommand(command1.c_str());
 
-        if(close(fd[1]) == -1){ 
-				    perror("smash error: close failed");
-			  }
         if(dup2(stderr_copy, 2) == -1){ // Restoring stderr fd
 				    perror("smash error: dup2 failed");
+            return;
 			  }
 			  if(close(stderr_copy) == -1){
 				    perror("smash error: close failed");
+            return;
 			  }
     }
     else {  //redirect stdout
@@ -1047,40 +1081,56 @@ void RedirectionCommand::execute(){
   
   int i = s.find(redirectionType);
   string command = s.substr(0,i);
-  
+  // cout << "command:" << command << "." << endl;
   string output_file;
   int fd;
   int stdout_copy = dup(1); //copy of standard output file descriptor
 	if(stdout_copy == -1){
 			perror("smash error: dup failed");
+      return;
 	}
   if(redirectionType == ">>") {  //append
-    output_file = s.substr(i+2, s.length());
+    output_file = s.substr(i+2);
     size_t pos = output_file.find_first_not_of(' ');
     output_file = output_file.substr(pos);
+    // cout << "output_file:" << output_file <<"."<<endl;
     fd = open(output_file.c_str(), O_WRONLY | O_CREAT | O_APPEND, 0655);
     if(fd == -1){
         perror("smash error: open failed");
+        return;
     }
   }
   else {  //override
-    output_file = s.substr(i+1, s.length());
+    output_file = s.substr(i+1);
     size_t pos = output_file.find_first_not_of(' ');
     output_file = output_file.substr(pos);
+    // cout << "output_file:" << output_file <<"."<<endl;
+    
     fd = open(output_file.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0655);
     if(fd == -1){
         perror("smash error: open failed");
+        return;
     }
   }
   if(dup2(fd, 1) == -1){
       perror("smash error: dup2 failed");
+      return;
     }
 
   smash.executeCommand(command.c_str());
 
+  if(close(fd)==-1){
+    perror("smash error: close failed");
+    return;
+  }
   if(dup2(stdout_copy, 1) == -1){ //restore original stdout
       perror("smash error: dup2 failed");
+      return;
     }
+   if(close(stdout_copy)==-1){
+    perror("smash error: close failed");
+    return;
+  } 
   
 }
 
