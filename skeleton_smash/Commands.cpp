@@ -646,9 +646,11 @@ void BgCommand::execute(){
       }
       if(!job->isStopped()){
         cerr << "smash error: bg: job-id " << job_id << " is already running in the background" << endl;
+        return;
       }
     }
 
+    //Printing job
     cout << job->getCmdLine() << " : " << job->getJobPid() << endl;
 
     if (kill(job->getJobPid(), SIGCONT) == -1) {
