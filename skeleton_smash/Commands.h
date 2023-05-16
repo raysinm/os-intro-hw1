@@ -5,6 +5,10 @@
 
 #define COMMAND_ARGS_MAX_LENGTH (200)
 #define COMMAND_MAX_ARGS (20)
+
+const std::string WHITESPACE = " \n\r\t\f\v";
+
+
 enum class DirErrors{
   BUF_NULLPTR,
   FAILED_GETCWD
@@ -14,6 +18,7 @@ class Command {
  protected:
  public:  // Data
   char* cmd_line;
+  std::string cmd_line_str;
   pid_t pid;
   // std::string cmd_name;
   std::vector<std::string> cmd_vec;
@@ -136,6 +141,7 @@ class JobsList {
     const int& getJobPid(){ return this->pid;}
     
     time_t getInitTime(){ return this->init_time;}
+    void setInitTime(time_t new_time){ this->init_time=new_time;}
     bool isStopped(){ return this->is_stopped;}
     bool isBackground(){ return this->is_background;}
     bool isFinished(){ return this->is_finished;}
@@ -144,7 +150,16 @@ class JobsList {
     void continueJob(){ this->is_stopped = false;}  //Need to send signal
     std::vector<std::string>& getCmdVec(){ return this->cmd_vec;}
     std::string& getCmdName(){ return this->cmd_vec[0];}
-    std::string& getCmdLine(){ return this->cmd_line;}
+    std::string& getCmdLine(bool w_bg=true){
+      std::string& ret = this->cmd_line;
+      if (!w_bg){
+        size_t pos = ret.find_last_not_of(WHITESPACE);
+        if (pos != std::string::npos) {
+          ret.erase(pos, 1);
+        }
+      }
+      return ret;
+    }
   
   };
  // TODO: Add your data members

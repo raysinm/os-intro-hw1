@@ -6,7 +6,7 @@
 using namespace std;
 
 void ctrlZHandler(int sig_num) {
-  cout << "smash: got ctrl-Z";
+  cout << "smash: got ctrl-Z" << endl;
 
   SmallShell& smash = SmallShell::getInstance();
   if (smash.fg_cmd==nullptr){
@@ -24,7 +24,7 @@ void ctrlZHandler(int sig_num) {
 }
 
 void ctrlCHandler(int sig_num) {
-  cout << "smash: got ctrl-C";
+  cout << "smash: got ctrl-C" << endl;
 
   SmallShell& smash = SmallShell::getInstance();
   if (smash.fg_cmd==nullptr){
