@@ -131,6 +131,7 @@ class JobsList {
     bool is_finished;
     std::vector<std::string> cmd_vec; 
     std::string cmd_line;
+    std::string cmd_line_nobg;
   public:
     JobEntry() = delete;
     JobEntry(const int job_id, pid_t pid, const time_t init_time, bool is_stopped, bool is_bg, std::vector<std::string> cmd_vec, std::string cmd_line);
@@ -150,15 +151,11 @@ class JobsList {
     void continueJob(){ this->is_stopped = false;}  //Need to send signal
     std::vector<std::string>& getCmdVec(){ return this->cmd_vec;}
     std::string& getCmdName(){ return this->cmd_vec[0];}
-    std::string& getCmdLine(bool w_bg=true){
-      std::string& ret = this->cmd_line;
-      if (!w_bg){
-        size_t pos = ret.find_last_not_of(WHITESPACE);
-        if (pos != std::string::npos) {
-          ret.erase(pos, 1);
-        }
+    std::string& getCmdLine(bool no_bg=false){
+      if (no_bg){
+        return this->cmd_line_nobg;
       }
-      return ret;
+      return this->cmd_line;
     }
   
   };

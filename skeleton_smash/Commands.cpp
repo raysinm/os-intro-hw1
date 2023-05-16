@@ -270,7 +270,13 @@ JobsList::JobEntry::JobEntry(const int job_id, pid_t pid, const time_t init_time
                                       is_background(is_bg),
                                       is_finished(false),
                                       cmd_vec(cmd_vec),
-                                      cmd_line(cmd_line){}
+                                      cmd_line(cmd_line){
+  this->cmd_line_nobg = this->cmd_line;
+  size_t pos = this->cmd_line.find_last_not_of(WHITESPACE);
+  if (pos != std::string::npos) {
+    cmd_line_nobg.erase(pos, 1);
+  }
+                                      }
 
 JobsList::~JobsList(){}
 
@@ -301,7 +307,7 @@ void JobsList::addJob(Command* cmd, bool isStopped){
 void JobsList::addFgJob(){
   /** Useful when doing fg and then ctrlZ. need to put the job back to the list with same id! **/
   auto it=jobs_list.begin();
-  for (; (it!=jobs_list.end()) && (it->getJobId() < fg_job->getJobId()); it++){
+  for (; (it!=jobs_list.end()) && (it->getJobId() < fg_job->getJobId()); ++it){
     // Do nothing, just move iterator until we find plasce for the job
   }
   time_t time_now;
@@ -314,7 +320,7 @@ void JobsList::addFgJob(){
   this->fg_job->stopJob();
 
   jobs_list.insert(it, *fg_job);
-  this->fg_job = nullptr;
+  // this->fg_job = nullptr;
 }
 
 void JobsList::printJobsList(){
@@ -378,7 +384,7 @@ void JobsList::removeJobById(int jobId){
   for (auto it=jobs_list.begin(); it != jobs_list.end(); it++){
     if (it->getJobId() == jobId){
       //Found the job
-      this->fg_job = new JobEntry(*it);
+      // this->fg_job = new JobEntry(*it);
       jobs_list.erase(it);  //shifts rest of items to fill gap
       return;
     }
@@ -565,14 +571,15 @@ void FgCommand::execute(){
 
     SmallShell& smash = SmallShell::getInstance();
     JobsList::JobEntry *job = nullptr;
-    int job_id = 0;
+    int job_id;
 
-    if(num_args == 0){
+    if(num_args == 0){  // Get maximal jobid job
       job = smash.jobs_list->getLastJob();
       if (job == nullptr){
         cerr << "smash error: fg: jobs list is empty" << endl;
         return;
       }
+      job_id = job ->getJobId();
     }
     else{
       job_id = std::stoi(cmd_vec[1]);
@@ -583,15 +590,14 @@ void FgCommand::execute(){
       }
     }
     
-    string bg = "";
-    if (job->isBackground()) bg = "&";
-    cout << job->getCmdLine() << bg << ": " << job->getJobPid() << endl;
+    cout << job->getCmdLine() << " : " << job->getJobPid() << endl;
 
 
-    ExternalCommand* cont_cmd = new ExternalCommand((job->getCmdLine(false)).c_str());  //maybe external command only?
+    ExternalCommand* cont_cmd = new ExternalCommand((job->getCmdLine(true)).c_str());  //maybe external command only?
     cont_cmd->pid = job->getJobPid();
     smash.fg_cmd = cont_cmd;
   
+
     if(job->isStopped()){
       if (kill(cont_cmd->pid, SIGCONT) == -1) {
         perror("smash error: kill failed");
@@ -599,6 +605,7 @@ void FgCommand::execute(){
       }
     }
     int status;
+    smash.jobs_list->fg_job = new JobsList::JobEntry(*job);
     smash.jobs_list->removeJobById(job_id);
     if (waitpid(cont_cmd->pid, &status, WUNTRACED) == -1) {
       perror("smash error: waitpid failed");
@@ -640,9 +647,11 @@ void BgCommand::execute(){
       }
       if(!job->isStopped()){
         cerr << "smash error: bg: job-id " << job_id << " is already running in the background" << endl;
+        return;
       }
     }
 
+    //Printing job
     cout << job->getCmdLine() << " : " << job->getJobPid() << endl;
 
     if (kill(job->getJobPid(), SIGCONT) == -1) {
@@ -703,11 +712,13 @@ void KillCommand::execute(){
   if (job == nullptr){
     // job not found
     cerr << "smash error: kill: job-id " << job_id << " does not exist" << std::endl;
+    return;
   }
   else{
     int sig_num = std::stoi(sig.substr(1));
     if (kill(job->getJobPid(), sig_num) != 0){
       perror("smash error: kill failed");
+      return;
     }
     cout << "signal number " << sig_num << " was sent to pid " << job->getJobPid() << endl;
   }
