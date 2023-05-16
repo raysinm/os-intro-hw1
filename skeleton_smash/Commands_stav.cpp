@@ -354,7 +354,7 @@ void JobsList::removeFinishedJobs(){
   // Checks if *non-stopped* jobs are finished
   for (auto it=jobs_list.begin(); it != jobs_list.end(); it++){
     int status;
-    if(!it->isStopped() && waitpid(it->getJobPid(), &status, WNOHANG)!=0){
+    if(waitpid(it->getJobPid(), &status, WNOHANG)!=0){
       it->markFinished();
     }
   }
