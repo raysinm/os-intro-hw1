@@ -811,7 +811,23 @@ void GetFileTypeCommand::execute(){
 ChmodCommand::ChmodCommand(const char* cmd_line): BuiltInCommand(cmd_line){}
 
 void ChmodCommand::execute(){
-  
+  int num_args = cmd_vec.size() - 1;
+  if (num_args != 2 || access(cmd_vec[2].c_str(), F_OK)!=0 || !isAllDigits(cmd_vec[1]) || cmd_vec[1].size() < 3 || cmd_vec[1].size() > 4){  //Checks if file exists and can be accessed, and if new_mode is digits
+    cout << "smash error: chmod: invalid arguments" << endl;
+    return;
+  }
+  const char* filepath = cmd_vec[2].c_str();
+
+  // if ((cmd_vec[1]).size() == 3){
+  //   cmd_vec[1] = '0' + cmd_vec[1];
+  // } 
+  long int new_mode = strtol(cmd_vec[1].c_str(), NULL, 8);
+  // int new_mode = std::stoi(cmd_vec[1]); //integer promised to be octal based
+
+  if (chmod(filepath, new_mode)!=0){
+    perror("smash error: chmod: ");
+  }
+
 
 }
 
